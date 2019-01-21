@@ -136,7 +136,7 @@ function insert(options, res) {
     let {data, collection} = options;
     let ops = {collection, ctrl, data};
     if (!Array.isArray(ops.data)) ops.data = [ops.data];
-    data.forEach((item) => {
+    ops.data.forEach((item) => {
         item._id = db.ObjectID().toString();
         item._createTime = +new Date();
     });

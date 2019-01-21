@@ -4,7 +4,7 @@
  */
 
 
-// $.post('/api/user/add', {name: "1234"}, function (data) {
+// $.post('/api/user/add', {name: "mojie",pwd:"mojie"}, function (data) {
 //     console.log(data)
 // });
 
@@ -14,6 +14,33 @@
 // $.post('/util/getPinYin', {string: "超课"}, function (data) {
 //     console.log(data)
 // });
+$.get('/util/getPublicKey', function (data) {
+    let key = data.key;
+    let crypt = new JSEncrypt();
+    crypt.setPublicKey(key);
+    let userInfo = 'mojie'; //需要加密的账号密码
+    let encryptKey = crypt.encrypt(userInfo); //使用公钥加密，得到密文
+    console.log(encryptKey);
+    $.ajax({
+        url: '/login',
+        type: "post",
+        contentType: 'application/json',
+        data: JSON.stringify({name: 'mojie', pwd: encryptKey}),
+        success: function (data) {
+            localStorage.setItem('token', data.token);
+            console.log(data);
+            setInterval(function () {
+                $.post('/util/getTest', {token: localStorage.getItem('token')}, function (data) {
+                    console.log(data)
+                });
+            }, 1000)
+        }
+    });
+    // $.post('/util/getTest', {key: encryptKey}, function (data) {
+    //     console.log(data.key===userInfo);
+    // })
+});
+
 
 let addData = [];
 for (let i = 1, len = 11; i < len; i++) {
@@ -32,15 +59,15 @@ for (let i = 1, len = 11; i < len; i++) {
 //         console.log(data);
 //     }
 // });
-$.ajax({
-    url: '/login',
-    type: "post",
-    contentType: 'application/json',
-    data: JSON.stringify({name: 'name4'}),
-    success: function (data) {
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: '/login',
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({name: '1234'}),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 var data = {
     rows: 50,
     page: 1,
