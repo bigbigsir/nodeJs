@@ -2,13 +2,14 @@
  * Created by: MoJie
  * Date: 2018/9/3
  */
-
+// $.cookie('token', '', {expires: -1});
 console.log(document.cookie);
+
 // $.post('/api/user/add', {name: "mojie", password: "123"}, function (data) {
 //     console.log(data)
 // });
 
-$.get('/api/user/find',{}, function (data) {
+$.get('/api/user/find', {}, function (data) {
     console.log(data)
 });
 

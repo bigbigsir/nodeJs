@@ -84,7 +84,11 @@ function signUp(options, res) {
 }
 
 function signOut(options, res) {
-
+    res.clearCookie('token');
+    res.send({
+        success:true,
+        msg:'退出成功'
+    })
 }
 
 // 私钥解密
