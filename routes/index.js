@@ -5,6 +5,7 @@
 'use strict';
 
 const express = require('express');
+const jwt = require('../common/token');
 const router = express();
 
 router.all('/*', (req, res, next) => {
@@ -12,8 +13,22 @@ router.all('/*', (req, res, next) => {
     formatReqParam(req);
     if (req.method === 'OPTIONS') {
         res.sendStatus(200);
-    } else {
+    } else if (/^\/(util|user)/.test(req.baseUrl)) {
         next();
+    } else {
+        jwt.verifyToken(req.cookies.token).then((data) => {
+            let token = jwt.generateToken(data._id);
+            res.cookie("token", token, {
+                maxAge: 1000 * 60 * 60 * 24
+            });
+            next();
+        }, () => {
+            res.status(401).send({
+                success: false,
+                status: 401,
+                msg: 'token无效，请登录'
+            })
+        });
     }
 });
 
@@ -27,7 +42,6 @@ function formatReqParam(req) {
         }
     }
     req._data = data;
-    req._path = req.baseUrl;
 }
 
 // 跨域设置

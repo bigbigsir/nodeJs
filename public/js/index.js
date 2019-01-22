@@ -3,44 +3,58 @@
  * Date: 2018/9/3
  */
 
-
-// $.post('/api/user/add', {name: "mojie",pwd:"mojie"}, function (data) {
+console.log(document.cookie);
+// $.post('/api/user/add', {name: "mojie", password: "123"}, function (data) {
 //     console.log(data)
 // });
 
-// $.get('/api/user/findPage', {rows: 50, page: 15, name: "name1", code: 2, exact1:true,exact: true}, function (data) {
-//     console.log(data)
-// });
-// $.post('/util/getPinYin', {string: "超课"}, function (data) {
-//     console.log(data)
-// });
-$.get('/util/getPublicKey', function (data) {
-    let key = data.key;
-    let crypt = new JSEncrypt();
-    crypt.setPublicKey(key);
-    let userInfo = 'mojie'; //需要加密的账号密码
-    let encryptKey = crypt.encrypt(userInfo); //使用公钥加密，得到密文
-    console.log(encryptKey);
-    $.ajax({
-        url: '/login',
-        type: "post",
-        contentType: 'application/json',
-        data: JSON.stringify({name: 'mojie', pwd: encryptKey}),
-        success: function (data) {
-            localStorage.setItem('token', data.token);
-            console.log(data);
-            setInterval(function () {
-                $.post('/util/getTest', {token: localStorage.getItem('token')}, function (data) {
-                    console.log(data)
-                });
-            }, 1000)
-        }
-    });
-    // $.post('/util/getTest', {key: encryptKey}, function (data) {
-    //     console.log(data.key===userInfo);
-    // })
+$.get('/api/user/find',{}, function (data) {
+    console.log(data)
 });
 
+// $.post('/util', {string: "超课"}, function (data) {
+//     console.log(data)
+// });
+
+// $.get('/util/getPublicKey', function (data) {
+//     let key = data.key;
+//     let crypt = new JSEncrypt();
+//     crypt.setPublicKey(key);
+//     let pwd = 'mojie1'; //需要加密的账号密码
+//     let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+//     $.ajax({
+//         url: '/user/signIn',
+//         type: "post",
+//         contentType: 'application/json',
+//         data: JSON.stringify({name: 'mojie1', password: encryptKey}),
+//         success: function (data) {
+//             console.log(data);
+//         }
+//     });
+// });
+
+// $.get('/util/getPublicKey', function (data) {
+//     let key = data.key;
+//     let crypt = new JSEncrypt();
+//     crypt.setPublicKey(key);
+//     for (let i = 10; i--;) {
+//         let pwd = 'mojie' + i; //需要加密的账号密码
+//         let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+//         $.ajax({
+//             url: '/user/signUp',
+//             type: "post",
+//             contentType: 'application/json',
+//             data: JSON.stringify({
+//                 name: 'mojie' + i,
+//                 code: '12345' + i,
+//                 password: encryptKey
+//             }),
+//             success: function (data) {
+//                 console.log(data);
+//             }
+//         });
+//     }
+// });
 
 let addData = [];
 for (let i = 1, len = 11; i < len; i++) {
@@ -59,6 +73,7 @@ for (let i = 1, len = 11; i < len; i++) {
 //         console.log(data);
 //     }
 // });
+
 // $.ajax({
 //     url: '/login',
 //     type: "post",
@@ -80,13 +95,14 @@ var data = {
 var jsonData = JSON.stringify(data);
 // $.ajax({
 //     url: '/api/user/findPage',
-//     type: "post",
-//     contentType: 'application/json',
-//     data: jsonData,
+//     type: "get",
+//     // contentType: 'application/json',
+//     data: data,
 //     success: function (data) {
 //         console.log(data);
 //     }
 // });
+
 let updateData1 = JSON.stringify({
     filter: {name: "update1"},
     update: {

@@ -10,7 +10,7 @@ const db = require('../mongodb/connect');
 
 router.all('/*', (req, res, next) => {
     let data = req._data;
-    let path = req._path.replace('/api').split("/").splice(1);
+    let path = req.params['0'].split('/');
     let type = path.pop();
     let collection = path.shift();
     let options = {data, path, collection};
@@ -42,7 +42,7 @@ function find(options, res) {
     let ctrl = 'find';
     let param = {
         sort: {createTime: 1},
-        projection: {pwd: 0}
+        projection: {password: 0}
     };
     let {data, collection} = options;
     let ops = {collection, ctrl, data, param};
@@ -70,8 +70,7 @@ function find(options, res) {
 function findOne(options, res) {
     let ctrl = 'findOne';
     let param = {
-        sort: {createTime: 1},
-        projection: {pwd: 0}
+        projection: {password: 0}
     };
     let {data, collection} = options;
     let ops = {collection, ctrl, data, param};
@@ -90,7 +89,7 @@ function findPage(options, res) {
     let getTotalCtrl = 'countDocuments';
     let param = {
         sort: {createTime: 1},
-        projection: {pwd: 0}
+        projection: {password: 0}
     };
     let {data, collection} = options;
     let {page, rows, pageSize, exact} = data;

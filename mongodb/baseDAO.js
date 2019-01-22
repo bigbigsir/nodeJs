@@ -73,7 +73,7 @@ function login(ops) {
     let {paths, param, cb} = ops;
     let collection = paths[0];
     if (param.acc && param.pwd) {
-        param = {$or: [{code: param.acc}, {tel: param.acc}, {email: param.acc}], pwd: param.pwd};
+        param = {$or: [{code: param.acc}, {phone: param.acc}, {email: param.acc}]};
         let options = {
             collection,
             params: [param],

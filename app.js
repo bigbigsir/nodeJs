@@ -10,7 +10,7 @@ const config = require('./config');
 const index = require('./routes/index');
 const api = require('./routes/api');
 const util = require('./routes/util');
-const login = require('./routes/login');
+const user = require('./routes/user');
 
 const app = express();
 
@@ -21,7 +21,7 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-app.use(cookieParser());
+app.use(cookieParser('emoji'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // session
@@ -31,7 +31,7 @@ app.use(session(config.sessionOps));
 app.use('/*', index);
 app.use('/api', api);
 app.use('/util', util);
-app.use('/login', login);
+app.use('/user', user);
 
 
 // catch 404 and forward to error handler
