@@ -29,6 +29,7 @@ router.all('/*', (req, res, next) => {
     }
 });
 
+// 登录
 function signIn(options, res) {
     let {data, collection} = options;
     let ctrl = 'findOne';
@@ -62,6 +63,7 @@ function signIn(options, res) {
     });
 }
 
+// 注册
 function signUp(options, res) {
     let {data, collection} = options;
     let ctrl = 'insertOne';
@@ -83,18 +85,19 @@ function signUp(options, res) {
     });
 }
 
+// 登出
 function signOut(options, res) {
     res.clearCookie('token');
     res.send({
-        success:true,
-        msg:'退出成功'
+        success: true,
+        msg: '退出成功'
     })
 }
 
-// 私钥解密
-function decrypt(key) {
+// 解密密文
+function decrypt(cipherText) {
     let privateKey = fs.readFileSync('./pem/rsa_private_key.pem').toString();
-    let buffer = Buffer.from(key, 'base64');
+    let buffer = Buffer.from(cipherText, 'base64');
     let decrypted = crypto.privateDecrypt({
         key: privateKey,
         padding: crypto.constants.RSA_PKCS1_PADDING

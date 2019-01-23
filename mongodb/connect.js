@@ -28,14 +28,14 @@ function connect(options) {
             }, (err) => {
                 reject(err);
                 client.close();
-                console.log(yellow('collection ctrl error:\n'), err, "\n");
+                console.log(yellow('mongodb collection ctrl error:\n'), err, "\n");
             });
         }, (err) => {
             reject(err);
-            console.log(yellow('MongoClient connect error:\n'), err, "\n");
+            console.log(yellow('mongodb client connection error:\n'), err, "\n");
         }).catch((err) => {
             reject(err);
-            console.log(yellow('MongoClient error:\n'), err, "\n");
+            console.log(yellow('mongodb client error:\n'), err, "\n");
         });
     });
 }

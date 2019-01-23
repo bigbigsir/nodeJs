@@ -16,11 +16,7 @@ router.all('/*', (req, res, next) => {
     } else if (/^\/(util|user)/.test(req.baseUrl)) {
         next();
     } else {
-        jwt.verifyToken(req.cookies.token).then((data) => {
-            let token = jwt.generateToken(data._id);
-            res.cookie("token", token, {
-                maxAge: 1000 * 60 * 60 * 24
-            });
+        jwt.verifyToken(req.cookies.token).then(() => {
             next();
         }, () => {
             res.status(401).send({

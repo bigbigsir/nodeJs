@@ -2,16 +2,45 @@
  * Created by: MoJie
  * Date: 2018/9/3
  */
-// $.cookie('token', '', {expires: -1});
+// $.cookie('token', "", {expires: -1});
 console.log(document.cookie);
+
+$("#btn").on("click", function () {
+    let oMyForm = new FormData($("#form")[0]);
+    oMyForm.append("name", "Groucho");
+    oMyForm.append("code", 123456);
+    oMyForm.append("obj", JSON.stringify({name: "obj"}));
+    let oReq = new XMLHttpRequest();
+    oReq.open("POST", "/api/file/upload", true);
+    oReq.onload = function (oEvent) {
+
+    };
+    oReq.send(oMyForm);
+});
+
+$.ajax({
+    url: "/api/file/removeFile",
+    type: "post",
+    contentType: 'application/json',
+    data: JSON.stringify({
+        _id: ['5c4846940b2a840f80b37b75']
+    }),
+    success: function (data) {
+        console.log(data);
+    }
+});
 
 // $.post('/api/user/add', {name: "mojie", password: "123"}, function (data) {
 //     console.log(data)
 // });
 
-$.get('/api/user/find', {}, function (data) {
-    console.log(data)
-});
+// $.get('/api/user/find', {}, function (data) {
+//     console.log(data)
+// });
+
+// $.get('/user/signOut', {}, function (data) {
+//     console.log(data)
+// });
 
 // $.post('/util', {string: "超课"}, function (data) {
 //     console.log(data)
