@@ -34,11 +34,12 @@ function signIn(options, res) {
     let {data, collection} = options;
     let ctrl = 'findOne';
     let pwd = data.password;
+    let param = {projection: {_id: 0}};
+    let ops = {collection, ctrl, data, param};
     delete data.password;
-    let ops = {collection, ctrl, data};
     db.connect(ops).then((data) => {
         if (data && data.password === generateHmac(decrypt(pwd))) {
-            let token = jwt.generateToken(data._id);
+            let token = jwt.generateToken(data.id);
             res.cookie("token", token, {
                 maxAge: 1000 * 60 * 60 * 24
             });
@@ -52,7 +53,8 @@ function signIn(options, res) {
             res.send({
                 success: false,
                 msg: '账号或者密码错误',
-                token: null
+                token: null,
+                user: null
             });
         }
     }, () => {
@@ -73,8 +75,8 @@ function signUp(options, res) {
     } catch (e) {
         return res.sendStatus(400);
     }
-    data._id = db.ObjectID().toString();
-    data._createTime = +new Date();
+    data.id = data._id = db.ObjectID().toString();
+    data.createTime = +new Date();
     db.connect(ops).then((data) => {
         res.send({
             data,

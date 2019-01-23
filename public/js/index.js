@@ -18,19 +18,19 @@ $("#btn").on("click", function () {
     oReq.send(oMyForm);
 });
 
-$.ajax({
-    url: "/api/file/removeFile",
-    type: "post",
-    contentType: 'application/json',
-    data: JSON.stringify({
-        _id: ['5c4846940b2a840f80b37b75']
-    }),
-    success: function (data) {
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: "/api/file/removeFile",
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({
+//         _id: ['5c4846940b2a840f80b37b75']
+//     }),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 
-// $.post('/api/user/add', {name: "mojie", password: "123"}, function (data) {
+// $.post('/api/role/add', {name: "mojie", password: "123"}, function (data) {
 //     console.log(data)
 // });
 
@@ -93,6 +93,7 @@ for (let i = 1, len = 11; i < len; i++) {
         code: i
     })
 }
+
 //
 // $.ajax({
 //     url: "/api/user/add",
@@ -113,6 +114,7 @@ for (let i = 1, len = 11; i < len; i++) {
 //         console.log(data);
 //     }
 // });
+
 var data = {
     rows: 50,
     page: 1,
@@ -123,6 +125,7 @@ var data = {
 };
 
 var jsonData = JSON.stringify(data);
+
 // $.ajax({
 //     url: '/api/user/findPage',
 //     type: "get",
@@ -140,18 +143,20 @@ let updateData1 = JSON.stringify({
     }
 });
 let updateData2 = JSON.stringify({
-    // "_id" : "5c3fead46f1af7579c1634cb",
+    id: "5c4872821201a42064ca45ec",
     name: "update"
 });
-// $.ajax({
-//     url: '/api/user/updateOne',
-//     type: "PUT",
-//     contentType: 'application/json',
-//     data: updateData2,
-//     success: function (data) {
-//         console.log(data);
-//     }
-// });
+
+$.ajax({
+    url: '/api/role/updateOne',
+    type: "PUT",
+    contentType: 'application/json',
+    data: updateData2,
+    success: function (data) {
+        console.log(data);
+    }
+});
+
 // $.ajax({
 //     url: '/api/user/updateMany',
 //     type: "PUT",
@@ -161,10 +166,12 @@ let updateData2 = JSON.stringify({
 //         console.log(data);
 //     }
 // });
+
 let removeData = JSON.stringify({
     _id: ["5c4016628e7aa50db048b39e", "5c4016628e7aa50db048b39f"],
     code: [5]
 });
+
 // $.ajax({
 //     url: '/api/user/remove',
 //     type: "DELETE",

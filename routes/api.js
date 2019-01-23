@@ -49,7 +49,7 @@ function find(params, res) {
     let ctrl = 'find';
     let param = {
         sort: {createTime: 1},
-        projection: {password: 0}
+        projection: {password: 0, _id: 0}
     };
     let {data, collection} = params;
     let ops = {collection, ctrl, data, param};
@@ -58,7 +58,7 @@ function find(params, res) {
     } else {
         for (let key in data) {
             if (data.hasOwnProperty(key)) {
-                if (typeof data[key] === 'string' && key !== '_id') {
+                if (typeof data[key] === 'string' && key !== 'id') {
                     data[key] = {$regex: data[key]};
                 } else if (Array.isArray(data[key])) {
                     data[key] = {$in: data[key]}
@@ -79,7 +79,7 @@ function find(params, res) {
 function findOne(params, res) {
     let ctrl = 'findOne';
     let param = {
-        projection: {password: 0}
+        projection: {password: 0, _id: 0}
     };
     let {data, collection} = params;
     let ops = {collection, ctrl, data, param};
@@ -98,7 +98,7 @@ function findPage(params, res) {
     let getTotalCtrl = 'countDocuments';
     let param = {
         sort: {createTime: 1},
-        projection: {password: 0}
+        projection: {password: 0, _id: 0}
     };
     let {data, collection} = params;
     let {page, rows, pageSize, exact} = data;
@@ -116,7 +116,7 @@ function findPage(params, res) {
     param.skip = (page - 1) * pageSize;
     if (!exact) {
         for (let key in data) {
-            if (data.hasOwnProperty(key) && typeof data[key] === 'string' && key !== "_id") {
+            if (data.hasOwnProperty(key) && typeof data[key] === 'string' && key !== "id") {
                 data[key] = {$regex: data[key]};
             }
         }
@@ -145,8 +145,8 @@ function insert(params, res) {
     let ops = {collection, ctrl, data};
     if (!Array.isArray(ops.data)) ops.data = [ops.data];
     ops.data.forEach((item) => {
-        item._id = db.ObjectID().toString();
-        item._createTime = +new Date();
+        item.id = item._id = db.ObjectID().toString();
+        item.createTime = +new Date();
     });
     db.connect(ops).then((data) => {
         res.send({
@@ -162,10 +162,9 @@ function updateOne(params, res) {
     let param;
     let ctrl = 'updateOne';
     let {data, collection} = params;
-    if (data._id) {
+    if (data.id) {
         param = {$set: data};
-        delete param._id;
-        data = {_id: data._id};
+        data = {id: data.id};
     } else {
         return res.status(400).end();
     }
@@ -278,12 +277,12 @@ function removeFile(params, res) {
     let ctrl = 'find';
     let {data, collection} = params;
     let ops = {collection, ctrl, data};
-    if (data._id) {
-        if (Array.isArray(data._id)) {
-            data._id = {$in: data._id}
+    if (data.id) {
+        if (Array.isArray(data.id)) {
+            data.id = {$in: data.id}
         }
     } else {
-        return res.status(400).send('_id is undefined')
+        return res.status(400).send('id is undefined')
     }
     db.connect(ops).then((data) => {
         data.forEach((item) => {
