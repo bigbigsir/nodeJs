@@ -16,11 +16,9 @@ router.all('/*', (req, res, next) => {
     } else if (/^\/(util|user)/.test(req.baseUrl)) {
         next();
     } else {
-        jwt.verifyToken(req.cookies.token).then(() => {
-            next();
-        }, () => {
+        jwt.verifyToken(req.cookies.token).then(() => next(), () => {
             res.status(401).send({
-                success: false,
+                ok: 0,
                 status: 401,
                 msg: 'token无效，请登录'
             })

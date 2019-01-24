@@ -5,11 +5,244 @@
 'use strict';
 
 const fs = require('fs');
+const _util = require('../common/util');
 const express = require('express');
 const db = require('../mongodb/connect');
 const multiparty = require('multiparty');
-
+const chalk = require('chalk');
+const red = chalk.bold.red;
+const log = console.log;
 const router = express();
+
+const reduce = {
+    add() {
+        let params;
+        let ctrl = 'insertMany';
+        let {data, collection} = this.params;
+        if (!Array.isArray(data)) data = [data];
+        data.forEach((item) => {
+            item.id = item._id = db.ObjectID().toString();
+            item.createTime = +new Date();
+        });
+        params = {collection, ctrl, data};
+        return new Promise((resolve, reject) => {
+            db.connect(params).then(data => resolve(
+                Object.assign({data: data.ops}, data.result)
+            ), reject);
+        })
+    },
+    find() {
+        let params;
+        let ctrl = 'find';
+        let {data, collection} = this.params;
+        let param = {
+            sort: {createTime: 1},
+            projection: {_id: 0, password: 0}
+        };
+        if (data.exact) {
+            delete data.exact;
+        } else {
+            for (let key in data) {
+                if (data.hasOwnProperty(key)) {
+                    if (typeof data[key] === 'string' && key !== 'id') {
+                        data[key] = {$regex: data[key]};
+                    } else if (Array.isArray(data[key])) {
+                        data[key] = {$in: data[key]}
+                    }
+                }
+            }
+        }
+        params = {collection, ctrl, data, param};
+        return new Promise((resolve, reject) => {
+            db.connect(params).then(data => resolve({
+                ok: 1, data
+            }), reject);
+        });
+    },
+    findOne() {
+        let ctrl = 'findOne';
+        let {data, collection} = this.params;
+        let param = {
+            sort: {createTime: 1},
+            projection: {_id: 0, password: 0}
+        };
+        let params = {collection, ctrl, data, param};
+        return new Promise((resolve, reject) => {
+            db.connect(params).then(data => resolve({
+                ok: 1, data
+            }), reject);
+        });
+    },
+    findPage() {
+        let getDataCtrl = 'find';
+        let getTotalCtrl = 'countDocuments';
+        let {data, collection} = this.params;
+        let {page, rows, pageSize, exact} = data;
+        let param = {
+            sort: {createTime: 1},
+            projection: {_id: 0, password: 0}
+        };
+        delete data.exact;
+        delete data.page;
+        delete data.rows;
+        delete data.pageSize;
+        page = parseInt(page);
+        pageSize = parseInt((pageSize || rows));
+        page = (page && page > 0) ? page : 1;
+        pageSize = (pageSize && pageSize > 0) ? pageSize : 10;
+        param.limit = pageSize;
+        param.skip = (page - 1) * pageSize;
+        if (!exact) {
+            for (let key in data) {
+                if (data.hasOwnProperty(key) && typeof data[key] === 'string' && key !== "id") {
+                    data[key] = {$regex: data[key]};
+                }
+            }
+        }
+        return new Promise((resolve, reject) => {
+            let getDataPas = {collection, ctrl: getDataCtrl, data, param};
+            let getTotalPas = {collection, ctrl: getTotalCtrl, data};
+            let getData = db.connect(getDataPas);
+            let getTotal = db.connect(getTotalPas);
+            Promise.all([getData, getTotal]).then(data => {
+                resolve({
+                    ok: 1,
+                    data: {
+                        page: page,
+                        pageSize: pageSize,
+                        total: data[1],
+                        maxPage: Math.ceil(data[1] / pageSize),
+                        rows: data[0]
+                    }
+                });
+            }, reject);
+        });
+    },
+    updateOne() {
+        let params;
+        let ctrl = 'updateOne';
+        let {data, collection} = this.params;
+        let param = {$set: data};
+        data = {id: data.id};
+        params = {collection, ctrl, data, param};
+        return new Promise((resolve, reject) => {
+            if (data.id) {
+                db.connect(params).then(resolve, reject);
+            } else {
+                reject('id is not defined');
+            }
+        });
+    },
+    updateMany() {
+        let param;
+        let params;
+        let ctrl = 'updateMany';
+        let {data, collection} = this.params;
+        return new Promise((resolve, reject) => {
+            if (_util.isObject(data.filter) && _util.isObject(data.update)) {
+                param = {$set: data.update};
+                data = data.filter;
+                params = {collection, ctrl, data, param};
+                db.connect(params).then(resolve, reject);
+            } else {
+                reject('filter or update attribute is not object');
+            }
+        });
+    },
+    remove() {
+        let params;
+        let ctrl = 'deleteMany';
+        let {data, collection} = this.params;
+        for (let key in data) {
+            if (data.hasOwnProperty(key) && Array.isArray(data[key])) {
+                data[key] = {$in: data[key]}
+            }
+        }
+        params = {collection, ctrl, data};
+        return new Promise((resolve, reject) => {
+            if (Object.keys(data).length) {
+                db.connect(params).then(resolve, reject);
+            } else {
+                reject('parameter is null');
+            }
+        });
+    },
+    upload(req) {
+        let uploadDir = 'public/upload';
+        let options = {
+            uploadDir,
+            // encoding: 'utf-8',
+            // maxFields: 1000,
+            // autoFiles: true,
+            // autoFields: true,
+            // maxFilesSize: Infinity,
+            // maxFieldsSize: 1024 * 1024 * 2
+        };
+        let form = new multiparty.Form(options);
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir);
+        }
+        return new Promise((resolve, reject) => {
+            form.parse(req, (err, fields, files) => {
+                let fileList = [];
+                if (err) return reject(err);
+                for (let key in fields) {
+                    if (fields.hasOwnProperty(key)) fields[key] = fields[key].join();
+                }
+                for (let key in files) {
+                    if (files.hasOwnProperty(key)) {
+                        files[key].forEach((item) => {
+                            if (item.originalFilename) {
+                                fileList.push({
+                                    path: item.path,
+                                    size: item.size,
+                                    fieldName: item.fieldName,
+                                    name: item.originalFilename,
+                                    url: '/upload/' + item.path.split('\\').pop(),
+                                });
+                            } else {
+                                fs.unlink(item.path, (err) => log(red('delete file error:\n'), err, '\n'));
+                            }
+                        })
+                    }
+                }
+                if (fileList.length) {
+                    if (Object.keys(fields).length) {
+                        fields.files = fileList;
+                        this.params.data = fields;
+                    } else {
+                        this.params.data = fileList;
+                    }
+                    this.add().then(data => {
+                        resolve(Object.assign({fileTotal: fileList.length}, data));
+                    }, reject);
+                } else {
+                    reject('Upload file is empty');
+                }
+            });
+        });
+    },
+    removeFile() {
+        return new Promise((resolve, reject) => {
+            if (this.params.data.id) {
+                this.find().then(({data}) => {
+                    data.forEach((item) => {
+                        if (item.files && item.files.length) {
+                            item.files.forEach((item) => {
+                                fs.unlink(item.path, (err) => log(red('delete file error:\n'), err, '\n'));
+                            })
+                        } else {
+                            fs.unlink(item.path, (err) => log(red('delete file error:\n'), err, '\n'));
+                        }
+                    });
+                    this.remove().then(resolve, reject);
+                }, reject);
+            } else {
+                reject('id is not defined');
+            }
+        });
+    }
+};
 
 router.all('/*', (req, res, next) => {
     let data = req._data;
@@ -17,293 +250,15 @@ router.all('/*', (req, res, next) => {
     let type = path.pop();
     let collection = path.shift();
     let params = {data, path, collection};
-    if (collection) {
-        switch (type) {
-            case "add":
-                return insert(params, res);
-            case "find":
-                return find(params, res);
-            case "findOne":
-                return findOne(params, res);
-            case "findPage":
-                return findPage(params, res);
-            case "updateOne":
-                return updateOne(params, res);
-            case "updateMany":
-                return updateMany(params, res);
-            case "remove":
-                return remove(params, res);
-            case "upload":
-                return upload(params, req, res);
-            case "removeFile":
-                return removeFile(params, res);
-            default:
-                next();
-        }
+    if (collection && reduce.hasOwnProperty(type)) {
+        reduce.params = params;
+        reduce[type](req).then(
+            data => res.send(data),
+            err => res.status(400).send(err)
+        );
     } else {
         next();
     }
 });
-
-function find(params, res) {
-    let ctrl = 'find';
-    let param = {
-        sort: {createTime: 1},
-        projection: {password: 0, _id: 0}
-    };
-    let {data, collection} = params;
-    let ops = {collection, ctrl, data, param};
-    if (data.exact) {
-        delete data.exact;
-    } else {
-        for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-                if (typeof data[key] === 'string' && key !== 'id') {
-                    data[key] = {$regex: data[key]};
-                } else if (Array.isArray(data[key])) {
-                    data[key] = {$in: data[key]}
-                }
-            }
-        }
-    }
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function findOne(params, res) {
-    let ctrl = 'findOne';
-    let param = {
-        projection: {password: 0, _id: 0}
-    };
-    let {data, collection} = params;
-    let ops = {collection, ctrl, data, param};
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function findPage(params, res) {
-    let getDataCtrl = 'find';
-    let getTotalCtrl = 'countDocuments';
-    let param = {
-        sort: {createTime: 1},
-        projection: {password: 0, _id: 0}
-    };
-    let {data, collection} = params;
-    let {page, rows, pageSize, exact} = data;
-    let getDataOps = {collection, ctrl: getDataCtrl, data, param};
-    let getTotalOps = {collection, ctrl: getTotalCtrl, data};
-    delete data.exact;
-    delete data.page;
-    delete data.rows;
-    delete data.pageSize;
-    page = parseInt(page);
-    page = (page && page > 0) ? page : 1;
-    pageSize = parseInt((pageSize || rows));
-    pageSize = (pageSize && pageSize > 0) ? pageSize : 10;
-    param.limit = pageSize;
-    param.skip = (page - 1) * pageSize;
-    if (!exact) {
-        for (let key in data) {
-            if (data.hasOwnProperty(key) && typeof data[key] === 'string' && key !== "id") {
-                data[key] = {$regex: data[key]};
-            }
-        }
-    }
-    let getData = db.connect(getDataOps);
-    let getTotal = db.connect(getTotalOps);
-    Promise.all([getData, getTotal]).then((data) => {
-        res.json({
-            data: {
-                page: page,
-                pageSize: pageSize,
-                total: data[1],
-                maxPage: Math.ceil(data[1] / pageSize),
-                rows: data[0]
-            },
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function insert(params, res) {
-    let ctrl = 'insertMany';
-    let {data, collection} = params;
-    let ops = {collection, ctrl, data};
-    if (!Array.isArray(ops.data)) ops.data = [ops.data];
-    ops.data.forEach((item) => {
-        item.id = item._id = db.ObjectID().toString();
-        item.createTime = +new Date();
-    });
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function updateOne(params, res) {
-    let param;
-    let ctrl = 'updateOne';
-    let {data, collection} = params;
-    if (data.id) {
-        param = {$set: data};
-        data = {id: data.id};
-    } else {
-        return res.status(400).end();
-    }
-    let ops = {collection, ctrl, data, param};
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function updateMany(params, res) {
-    let param;
-    let ctrl = 'updateMany';
-    let {data, collection} = params;
-    if ((data.filter instanceof Object) && (data.update instanceof Object)) {
-        param = {$set: data.update};
-        data = data.filter;
-    } else {
-        return res.status(400).end();
-    }
-    let ops = {collection, ctrl, data, param};
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function remove(params, res) {
-    let ctrl = 'deleteMany';
-    let {data, collection} = params;
-    let ops = {collection, ctrl, data};
-    if (!Object.keys(data).length) return res.status(400).end();
-    for (let key in data) {
-        if (data.hasOwnProperty(key) && Array.isArray(data[key])) {
-            data[key] = {$in: data[key]}
-        }
-    }
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function upload(params, req, res) {
-    let uploadDir = 'public/upload';
-    let options = {
-        uploadDir,
-        // encoding: 'utf-8',
-        // maxFields: 1000,
-        // autoFiles: true,
-        // autoFields: true,
-        // maxFilesSize: Infinity,
-        // maxFieldsSize: 1024 * 1024 * 2
-    };
-    let form = new multiparty.Form(options);
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir);
-    }
-    form.parse(req, (err, fields, files) => {
-        let fileList = [];
-        if (err) return res.status(403).send({msg: err});
-        for (let key in fields) {
-            if (fields.hasOwnProperty(key)) fields[key] = fields[key].join();
-        }
-        for (let key in files) {
-            if (files.hasOwnProperty(key)) {
-                files[key].forEach((item) => {
-                    if (item.originalFilename) {
-                        fileList.push({
-                            path: item.path,
-                            size: item.size,
-                            fieldName: item.fieldName,
-                            name: item.originalFilename,
-                            url: '/upload/' + item.path.split('\\').pop(),
-                        });
-                    } else {
-                        fs.unlink(item.path, () => {
-                        });
-                    }
-                })
-            }
-        }
-        if (fileList.length) {
-            if (Object.keys(fields).length) {
-                fields.files = fileList;
-                params.data = fields;
-            } else {
-                params.data = fileList;
-            }
-            insert(params, res);
-        } else {
-            res.status(400).send('Upload file is empty');
-        }
-    });
-}
-
-function removeFile(params, res) {
-    let ctrl = 'find';
-    let {data, collection} = params;
-    let ops = {collection, ctrl, data};
-    if (data.id) {
-        if (Array.isArray(data.id)) {
-            data.id = {$in: data.id}
-        }
-    } else {
-        return res.status(400).send('id is undefined')
-    }
-    db.connect(ops).then((data) => {
-        data.forEach((item) => {
-            if (item.files && item.files.length) {
-                item.files.forEach((item) => {
-                    fs.unlink(item.path, () => {
-                    });
-                })
-            } else {
-                fs.unlink(item.path, () => {
-                });
-            }
-        });
-        remove(params, res);
-    }, (err) => {
-        res.status(400).send(err);
-    });
-}
-
-function rejected(res, err) {
-    res.status(400).send(err);
-}
 
 module.exports = router;

@@ -39,7 +39,7 @@ function getPinYin(options, res) {
         result = Array.prototype.concat.apply([], result);
         res.send({
             data: result,
-            success: true
+            ok: 1
         });
     } else {
         return res.status(400).send('param has to be a string');
@@ -51,7 +51,7 @@ function getPublicKey(options, res) {
     let publicKey = fs.readFileSync('./pem/rsa_public_key.pem').toString();
     res.send({
         key: publicKey,
-        success: true
+        ok: 1
     });
 }
 

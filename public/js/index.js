@@ -3,7 +3,7 @@
  * Date: 2018/9/3
  */
 // $.cookie('token', "", {expires: -1});
-console.log(document.cookie);
+// console.log(document.cookie);
 
 $("#btn").on("click", function () {
     let oMyForm = new FormData($("#form")[0]);
@@ -17,12 +17,13 @@ $("#btn").on("click", function () {
     };
     oReq.send(oMyForm);
 });
+
 // $.ajax({
 //     url: "/api/file/removeFile",
 //     type: "post",
 //     contentType: 'application/json',
 //     data: JSON.stringify({
-//         _id: ['5c4846940b2a840f80b37b75']
+//         id: ['5c49babfe056c83798e78202']
 //     }),
 //     success: function (data) {
 //         console.log(data);
@@ -93,17 +94,17 @@ for (let i = 1, len = 11; i < len; i++) {
     })
 }
 
-$.ajax({
-    url: "/api/role/remove",
-    type: "post",
-    contentType: 'application/json',
-    data: JSON.stringify({
-        id:['5c499368dee35d3dc4543b0d','5c499368dee35d3dc4543b0e']
-    }),
-    success: function (data) {
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: "/api/role/remove",
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({
+//         id:['5c4872821201a42064ca45ec','5c499368dee35d3dc4543b0e']
+//     }),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 
 // $.ajax({
 //     url: '/login',
@@ -168,12 +169,11 @@ let updateData2 = JSON.stringify({
 // });
 
 let removeData = JSON.stringify({
-    _id: ["5c4016628e7aa50db048b39e", "5c4016628e7aa50db048b39f"],
-    code: [5]
+    _id: ["5c4872821201a42064ca45ec", "5c4016628e7aa50db048b39f"],
 });
 
 // $.ajax({
-//     url: '/api/user/remove',
+//     url: '/api/role/remove',
 //     type: "DELETE",
 //     contentType: 'application/json',
 //     data: removeData,

@@ -67,7 +67,6 @@ function reduce(ops) {
  * ==================================================================
  */
 
-
 // 登录方法
 function login(ops) {
     let {paths, param, cb} = ops;

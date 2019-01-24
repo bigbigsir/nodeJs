@@ -4,11 +4,10 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
-const chalk = require("chalk");
 
 const config = require('./config');
 const index = require('./routes/index');
-const api = require('./routes/api1');
+const api = require('./routes/api');
 const util = require('./routes/util');
 const user = require('./routes/user');
 
@@ -33,7 +32,6 @@ app.use('/api', api);
 app.use('/util', util);
 app.use('/user', user);
 
-
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
@@ -53,7 +51,7 @@ app.use(function (err, req, res) {
 const server = app.listen(config.port, config.host, function () {
     const host = server.address().address;
     const port = server.address().port;
-    console.log(chalk.green(`server address: http://${host}:${port}`));
+    console.log('\033[42;30mserver address:\033[0m http://' + host + ':' + port);
 });
 
 module.exports = app;

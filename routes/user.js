@@ -16,28 +16,28 @@ router.all('/*', (req, res, next) => {
     let path = req.params['0'].split('/');
     let type = path.pop();
     let collection = 'user';
-    let options = {data, collection};
+    let params = {data, collection};
     switch (type) {
         case 'signIn':
-            return signIn(options, res);
+            return signIn(params, res);
         case 'signUp':
-            return signUp(options, res);
+            return signUp(params, res);
         case 'signOut':
-            return signOut(options, res);
+            return signOut(res);
         default:
             next();
     }
 });
 
 // 登录
-function signIn(options, res) {
-    let {data, collection} = options;
+function signIn(params, res) {
+    let {data, collection} = params;
     let ctrl = 'findOne';
     let pwd = data.password;
     let param = {projection: {_id: 0}};
-    let ops = {collection, ctrl, data, param};
     delete data.password;
-    db.connect(ops).then((data) => {
+    params = {collection, ctrl, data, param};
+    db.connect(params).then((data) => {
         if (data && data.password === generateHmac(decrypt(pwd))) {
             let token = jwt.generateToken(data.id);
             delete data.password;
@@ -45,32 +45,31 @@ function signIn(options, res) {
                 maxAge: 1000 * 60 * 60 * 24
             });
             res.send({
-                success: true,
+                ok: 1,
                 msg: '登录成功',
                 token: token,
                 user: data
             });
         } else {
             res.send({
-                success: false,
+                ok: 1,
                 msg: '账号或者密码错误',
                 token: null,
                 user: null
             });
         }
-    }, () => {
-        res.sendStatus(400);
+    }, (err) => {
+        res.status(400).read(err);
     }).catch((err) => {
-        res.sendStatus(400);
-        console.log('login catch:', err);
+        res.status(400).send(err);
+        console.error('login catch:', err);
     });
 }
 
 // 注册
-function signUp(options, res) {
-    let {data, collection} = options;
+function signUp(params, res) {
+    let {data, collection} = params;
     let ctrl = 'insertOne';
-    let ops = {collection, ctrl, data};
     try {
         data.password = generateHmac(decrypt(data.password));
     } catch (e) {
@@ -78,23 +77,20 @@ function signUp(options, res) {
     }
     data.id = data._id = db.ObjectID().toString();
     data.createTime = +new Date();
-    db.connect(ops).then((data) => {
-        res.send({
-            data,
-            success: true
-        });
-    }, () => {
-        res.status(400).end();
-    });
+    params = {collection, ctrl, data};
+    db.connect(params).then(
+        data => res.send(data),
+        err => res.status(400).end(err)
+    );
 }
 
 // 登出
-function signOut(options, res) {
+function signOut(res) {
     res.clearCookie('token');
     res.send({
-        success: true,
+        ok: 1,
         msg: '退出成功'
-    })
+    });
 }
 
 // 解密密文
