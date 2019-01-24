@@ -40,6 +40,7 @@ function signIn(options, res) {
     db.connect(ops).then((data) => {
         if (data && data.password === generateHmac(decrypt(pwd))) {
             let token = jwt.generateToken(data.id);
+            delete data.password;
             res.cookie("token", token, {
                 maxAge: 1000 * 60 * 60 * 24
             });

@@ -17,7 +17,6 @@ $("#btn").on("click", function () {
     };
     oReq.send(oMyForm);
 });
-
 // $.ajax({
 //     url: "/api/file/removeFile",
 //     type: "post",
@@ -30,11 +29,11 @@ $("#btn").on("click", function () {
 //     }
 // });
 
-// $.post('/api/role/add', {name: "mojie", password: "123"}, function (data) {
+// $.post('/api/role/remove', {id:'5c4977bd265ac048603e1200'}, function (data) {
 //     console.log(data)
 // });
 
-// $.get('/api/user/find', {}, function (data) {
+// $.get('/api/user/findOne', {name:1}, function (data) {
 //     console.log(data)
 // });
 
@@ -94,16 +93,17 @@ for (let i = 1, len = 11; i < len; i++) {
     })
 }
 
-//
-// $.ajax({
-//     url: "/api/user/add",
-//     type: "post",
-//     contentType: 'application/json',
-//     data: JSON.stringify(addData),
-//     success: function (data) {
-//         console.log(data);
-//     }
-// });
+$.ajax({
+    url: "/api/role/remove",
+    type: "post",
+    contentType: 'application/json',
+    data: JSON.stringify({
+        id:['5c499368dee35d3dc4543b0d','5c499368dee35d3dc4543b0e']
+    }),
+    success: function (data) {
+        console.log(data);
+    }
+});
 
 // $.ajax({
 //     url: '/login',
@@ -129,8 +129,8 @@ var jsonData = JSON.stringify(data);
 // $.ajax({
 //     url: '/api/user/findPage',
 //     type: "get",
-//     // contentType: 'application/json',
-//     data: data,
+//     contentType: 'application/json',
+//     data: jsonData,
 //     success: function (data) {
 //         console.log(data);
 //     }
@@ -147,15 +147,15 @@ let updateData2 = JSON.stringify({
     name: "update"
 });
 
-$.ajax({
-    url: '/api/role/updateOne',
-    type: "PUT",
-    contentType: 'application/json',
-    data: updateData2,
-    success: function (data) {
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: '/api/role/updateOne',
+//     type: "PUT",
+//     contentType: 'application/json',
+//     data: updateData2,
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 
 // $.ajax({
 //     url: '/api/user/updateMany',

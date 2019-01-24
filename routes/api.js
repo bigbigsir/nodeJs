@@ -71,8 +71,8 @@ function find(params, res) {
             data,
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -88,8 +88,8 @@ function findOne(params, res) {
             data,
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -134,8 +134,8 @@ function findPage(params, res) {
             },
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -153,8 +153,8 @@ function insert(params, res) {
             data,
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -174,8 +174,8 @@ function updateOne(params, res) {
             data,
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -195,8 +195,8 @@ function updateMany(params, res) {
             data,
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -215,8 +215,8 @@ function remove(params, res) {
             data,
             success: true
         });
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
 }
 
@@ -224,12 +224,12 @@ function upload(params, req, res) {
     let uploadDir = 'public/upload';
     let options = {
         uploadDir,
-        encoding: 'utf-8',
-        maxFields: 1000,
-        autoFiles: true,
-        autoFields: true,
-        maxFilesSize: Infinity,
-        maxFieldsSize: 1024 * 1024 * 2
+        // encoding: 'utf-8',
+        // maxFields: 1000,
+        // autoFiles: true,
+        // autoFields: true,
+        // maxFilesSize: Infinity,
+        // maxFieldsSize: 1024 * 1024 * 2
     };
     let form = new multiparty.Form(options);
     if (!fs.existsSync(uploadDir)) {
@@ -297,9 +297,13 @@ function removeFile(params, res) {
             }
         });
         remove(params, res);
-    }, () => {
-        res.status(400).end();
+    }, (err) => {
+        res.status(400).send(err);
     });
+}
+
+function rejected(res, err) {
+    res.status(400).send(err);
 }
 
 module.exports = router;

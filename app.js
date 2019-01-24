@@ -8,7 +8,7 @@ const chalk = require("chalk");
 
 const config = require('./config');
 const index = require('./routes/index');
-const api = require('./routes/api');
+const api = require('./routes/api1');
 const util = require('./routes/util');
 const user = require('./routes/user');
 

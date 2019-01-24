@@ -11,30 +11,29 @@ const chalk = require('chalk');
 const yellow = chalk.bold.yellow;
 const green = chalk.bold.green;
 
-function connect(options) {
-    console.log(green('\noptions:\n'), options, "\n");
-    const {collection, ctrl, data, param} = options;
+function connect(params) {
+    console.log(green('\nparams:\n'), params, "\n");
+    const {collection, ctrl, data, param, options} = params;
     return new Promise((resolve, reject) => {
         MongoClient.connect(config.dbUrl, config.dbOptions).then((client) => {
-            let result;
             const db = client.db(config.dbName);
             const col = db.collection(collection);
-            if (ctrl === "find") result = col[ctrl](data, param).toArray();
-            else result = col[ctrl](data, param);
+            let result = col[ctrl](data, param, options);
+            if (ctrl === "find") result = result.toArray();
             result.then((data) => {
                 resolve(data);
                 client.close();
                 // console.log(green('result data:\n'), data, "\n");
             }, (err) => {
-                reject(err);
+                reject(err.toString());
                 client.close();
                 console.log(yellow('mongodb collection ctrl error:\n'), err, "\n");
             });
         }, (err) => {
-            reject(err);
+            reject(err.toString());
             console.log(yellow('mongodb client connection error:\n'), err, "\n");
         }).catch((err) => {
-            reject(err);
+            reject(err.toString());
             console.log(yellow('mongodb client error:\n'), err, "\n");
         });
     });

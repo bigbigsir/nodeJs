@@ -32,11 +32,6 @@ router.all('/*', (req, res, next) => {
 function formatReqParam(req) {
     let data = (req.method === "GET") ? req.query : req.body;
     if (!(data instanceof Object)) data = Object.assign({}, data);
-    if (req.method === "GET" && Object.keys(data).length === 1 && Object.values(data)[0] === "") {
-        if (/^\[.*\]$/.test(Object.keys(data)[0]) || /^\{.*\}$/.test(Object.keys(data)[0])) {
-            data = JSON.parse(Object.keys(data)[0]);
-        }
-    }
     req._data = data;
 }
 
