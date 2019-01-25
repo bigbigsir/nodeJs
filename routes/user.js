@@ -73,7 +73,7 @@ function signUp(params, res) {
     try {
         data.password = generateHmac(decrypt(data.password));
     } catch (e) {
-        return res.sendStatus(400);
+        return res.status(400).send(e);
     }
     data.id = data._id = db.ObjectID().toString();
     data.createTime = +new Date();

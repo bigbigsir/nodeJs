@@ -21,6 +21,7 @@ function connect(params) {
             const col = db.collection(collection);
             let result = col[ctrl](data, param, options);
             if (ctrl === "find") result = result.toArray();
+            if (ctrl === "aggregate") result = col[ctrl]([data, param]).toArray();
             result.then((data) => {
                 resolve(data);
                 client.close();

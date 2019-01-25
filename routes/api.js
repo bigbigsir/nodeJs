@@ -15,20 +15,48 @@ const log = console.log;
 const router = express();
 
 const reduce = {
+    tree() {
+        let params;
+        let notData;
+        let ctrl = 'find';
+        let {data, collection} = this.params;
+        let param = {
+            sort: {sort: 1},
+            projection: {_id: 0}
+        };
+        data = Object.keys(data).length ? data : {parent: null};
+        notData = Object.assign({}, data);
+        for (let key in notData) {
+            if (notData.hasOwnProperty(key)) {
+                notData[key] = {$ne: notData[key]};
+            }
+        }
+        return new Promise((resolve, reject) => {
+            let getRootPas = {collection, ctrl, data, param};
+            let getChildPas = {collection, ctrl, data: notData, param};
+            let getRoot = db.connect(getRootPas);
+            let getChild = db.connect(getChildPas);
+            Promise.all([getRoot, getChild]).then((data) => {
+                resolve(data);
+            }, reject);
+        });
+    },
     add() {
         let params;
         let ctrl = 'insertMany';
         let {data, collection} = this.params;
-        if (!Array.isArray(data)) data = [data];
+        let isArray = Array.isArray(data);
+        if (!isArray) data = [data];
         data.forEach((item) => {
             item.id = item._id = db.ObjectID().toString();
             item.createTime = +new Date();
         });
         params = {collection, ctrl, data};
         return new Promise((resolve, reject) => {
-            db.connect(params).then(data => resolve(
-                Object.assign({data: data.ops}, data.result)
-            ), reject);
+            db.connect(params).then((data) => {
+                data = Object.assign({data: isArray ? data.ops : data.ops[0]}, data.result);
+                resolve(data);
+            }, reject);
         })
     },
     find() {
@@ -54,7 +82,7 @@ const reduce = {
         }
         params = {collection, ctrl, data, param};
         return new Promise((resolve, reject) => {
-            db.connect(params).then(data => resolve({
+            db.connect(params).then((data) => resolve({
                 ok: 1, data
             }), reject);
         });
@@ -68,7 +96,7 @@ const reduce = {
         };
         let params = {collection, ctrl, data, param};
         return new Promise((resolve, reject) => {
-            db.connect(params).then(data => resolve({
+            db.connect(params).then((data) => resolve({
                 ok: 1, data
             }), reject);
         });
@@ -104,7 +132,7 @@ const reduce = {
             let getTotalPas = {collection, ctrl: getTotalCtrl, data};
             let getData = db.connect(getDataPas);
             let getTotal = db.connect(getTotalPas);
-            Promise.all([getData, getTotal]).then(data => {
+            Promise.all([getData, getTotal]).then((data) => {
                 resolve({
                     ok: 1,
                     data: {
@@ -161,7 +189,7 @@ const reduce = {
         params = {collection, ctrl, data};
         return new Promise((resolve, reject) => {
             if (Object.keys(data).length) {
-                db.connect(params).then(resolve, reject);
+                db.connect(params).then(({result}) => resolve(result), reject);
             } else {
                 reject('parameter is null');
             }
@@ -201,7 +229,7 @@ const reduce = {
                                     url: '/upload/' + item.path.split('\\').pop(),
                                 });
                             } else {
-                                fs.unlink(item.path, (err) => log(red('delete file error:\n'), err, '\n'));
+                                fs.unlink(item.path, (err) => err && log(red('delete file error:\n'), err, '\n'));
                             }
                         })
                     }
@@ -226,16 +254,22 @@ const reduce = {
         return new Promise((resolve, reject) => {
             if (this.params.data.id) {
                 this.find().then(({data}) => {
+                    let fileTotal = 0;
                     data.forEach((item) => {
                         if (item.files && item.files.length) {
                             item.files.forEach((item) => {
-                                fs.unlink(item.path, (err) => log(red('delete file error:\n'), err, '\n'));
+                                fileTotal++;
+                                fs.unlink(item.path, (err) => err && log(red('delete file error:\n'), err, '\n'));
                             })
                         } else {
-                            fs.unlink(item.path, (err) => log(red('delete file error:\n'), err, '\n'));
+                            fileTotal++;
+                            fs.unlink(item.path, (err) => err && log(red('delete file error:\n'), err, '\n'));
                         }
                     });
-                    this.remove().then(resolve, reject);
+                    this.remove().then(data => {
+                        data.fileTotal = fileTotal;
+                        resolve(data);
+                    }, reject);
                 }, reject);
             } else {
                 reject('id is not defined');
@@ -262,3 +296,32 @@ router.all('/*', (req, res, next) => {
 });
 
 module.exports = router;
+let a = [{
+    "_id": "1",
+    "name": "1",
+    "parent": null,
+}, {
+    "_id": "1-1",
+    "name": "1-1",
+    "parent": "1"
+}, {
+    "_id": "1-2",
+    "name": "1-2",
+    "parent": "1"
+}, {
+    "_id": "1-1-1",
+    "name": "1-1-1",
+    "parent": "1-1"
+}, {
+    "_id": "1-1-2",
+    "name": "1-1-2",
+    "parent": "1-1"
+}, {
+    "_id": "1-2-1",
+    "name": "1-2-1",
+    "parent": "1-2"
+}, {
+    "_id": "1-2-1-1",
+    "name": "1-2-1-1",
+    "parent": "1-2-1"
+}];

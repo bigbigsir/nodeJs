@@ -13,9 +13,11 @@ router.all('/*', (req, res, next) => {
     formatReqParam(req);
     if (req.method === 'OPTIONS') {
         res.sendStatus(200);
-    } else if (/^\/(util|user)/.test(req.baseUrl)) {
+    }
+    else if (/^\/(util|user)/.test(req.baseUrl)) {
         next();
-    } else {
+    }
+    else {
         jwt.verifyToken(req.cookies.token).then(() => next(), () => {
             res.status(401).send({
                 ok: 0,

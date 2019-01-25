@@ -18,23 +18,23 @@ $("#btn").on("click", function () {
     oReq.send(oMyForm);
 });
 
-// $.ajax({
-//     url: "/api/file/removeFile",
-//     type: "post",
-//     contentType: 'application/json',
-//     data: JSON.stringify({
-//         id: ['5c49babfe056c83798e78202']
-//     }),
-//     success: function (data) {
-//         console.log(data);
-//     }
+$.ajax({
+    url: "/api/tree/tree",
+    type: "post",
+    contentType: 'application/json',
+    // data: JSON.stringify({name:"1"}),
+    success: function (data) {
+        console.log(data);
+    }
+});
+
+// $.post('/api/role/add', {
+//    name:"mojie"
+// }, function (data) {
+//     console.log(data);
 // });
 
-// $.post('/api/role/remove', {id:'5c4977bd265ac048603e1200'}, function (data) {
-//     console.log(data)
-// });
-
-// $.get('/api/user/findOne', {name:1}, function (data) {
+// $.get('/api/role/findOne', {name:'mojie'}, function (data) {
 //     console.log(data)
 // });
 
