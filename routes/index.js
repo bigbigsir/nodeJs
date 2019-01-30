@@ -9,7 +9,6 @@ const jwt = require('../common/token');
 const router = express();
 
 router.all('/*', (req, res, next) => {
-    console.log(req.baseUrl);
     setHeader(req, res);
     formatReqParam(req);
     if (req.method === 'OPTIONS') {

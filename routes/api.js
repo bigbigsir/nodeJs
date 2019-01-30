@@ -157,18 +157,18 @@ const reduce = {
             }, reject);
         });
     },
-    updateOne() {
+    updateOne(update) {
         let params;
         let ctrl = 'updateOne';
         let {data, collection} = this.params;
         let filter = {id: data.id};
-        let update = {$set: data};
+        update = update || {$set: data};
         params = {collection, ctrl, ops: [filter, update]};
         return new Promise((resolve, reject) => {
             if (data.id) {
                 db.connect(params).then(resolve, reject);
             } else {
-                reject('id is not defined');
+                reject('id arguments cannot be null');
             }
         });
     },
@@ -202,7 +202,7 @@ const reduce = {
             if (Object.keys(data).length) {
                 db.connect(params).then(({result}) => resolve(result), reject);
             } else {
-                reject('parameter is null');
+                reject('arguments cannot be null');
             }
         });
     },
@@ -286,11 +286,71 @@ const reduce = {
                 reject('id is not defined');
             }
         });
+    },
+    joinQuery() {
+        let ctrl = 'aggregate';
+        let {data, path, collection} = this.params;
+        let formCol = path[0];
+        let localField = `${collection}_${formCol}`;
+        let pipeline = [
+            {
+                $match: data,
+            }, {
+                $lookup: {
+                    from: formCol,
+                    localField: localField,
+                    foreignField: 'id',
+                    as: localField
+                },
+            },
+        ];
+        let params = {collection, ctrl, ops: [pipeline]};
+        return new Promise((resolve, reject) => {
+            if (formCol) {
+                db.connect(params).then((data) => {
+                    resolve({
+                        ok: 1,
+                        data: data[0] && data[0][localField]
+                    });
+                }, reject);
+            } else {
+                reject('collection to join cannot be null');
+            }
+        });
+    },
+    createJoin() {
+        let {data, path, collection} = this.params;
+        let formCol = path[0];
+        let localField = `${collection}_${formCol}`;
+        let update = {
+            $addToSet: {
+                [localField]: {$each: data.joinIds}
+            }
+        };
+        if (formCol) {
+            return this.updateOne(update);
+        } else {
+            return Promise.reject('collection to join cannot be null');
+        }
+    },
+    removeJoin() {
+        let {data, path, collection} = this.params;
+        let formCol = path[0];
+        let localField = `${collection}_${formCol}`;
+        let update = {
+            $pullAll: {
+                [localField]: data.joinIds
+            }
+        };
+        if (formCol) {
+            return this.updateOne(update);
+        } else {
+            return Promise.reject('collection to join cannot be null');
+        }
     }
 };
 
 router.all('/*', (req, res, next) => {
-    console.log(req.baseUrl);
     let data = req._data;
     let path = req.params['0'].split('/');
     let type = path.pop();

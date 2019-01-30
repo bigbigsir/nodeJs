@@ -20,16 +20,16 @@ $("#btn").on("click", function () {
 var time = Date.now();
 
 
-$.ajax({
-    url: "/api/tree/tree",
-    type: "post",
-    contentType: 'application/json',
-    // data: JSON.stringify({name:"1"}),
-    success: function (data) {
-        console.log(Date.now() - time);
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: "/api/tree/tree",
+//     type: "post",
+//     contentType: 'application/json',
+//     // data: JSON.stringify({name:"1"}),
+//     success: function (data) {
+//         console.log(Date.now() - time);
+//         console.log(data);
+//     }
+// });
 
 
 // $.post('/api/role/add', {
@@ -101,6 +101,44 @@ for (let i = 1, len = 11; i < len; i++) {
 }
 
 // $.ajax({
+//     url: "/api/product/orders/createJoin",
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({
+//         id: 1,
+//         joinIds: [1,3]
+//     }),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
+
+$.ajax({
+    url: "/api/product/orders/removeJoin",
+    type: "post",
+    contentType: 'application/json',
+    data: JSON.stringify({
+        id: 1,
+        joinIds: [1]
+    }),
+    success: function (data) {
+        console.log(data);
+    }
+});
+
+$.ajax({
+    url: "/api/product/orders/joinQuery",
+    type: "post",
+    contentType: 'application/json',
+    data: JSON.stringify({
+        id: 1
+    }),
+    success: function (data) {
+        console.log(data);
+    }
+});
+
+// $.ajax({
 //     url: "/api/role/remove",
 //     type: "post",
 //     contentType: 'application/json',
@@ -150,12 +188,12 @@ let updateData1 = JSON.stringify({
     }
 });
 let updateData2 = JSON.stringify({
-    id: "5c4872821201a42064ca45ec",
-    name: "update"
+    id: 1,
+    product_orders: [1, 2]
 });
 
 // $.ajax({
-//     url: '/api/role/updateOne',
+//     url: '/api/product/updateOne',
 //     type: "PUT",
 //     contentType: 'application/json',
 //     data: updateData2,
