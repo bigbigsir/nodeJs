@@ -1,4 +1,5 @@
 /**
+ * @description 登录/注册需要获取公钥加密后发送，密码字段不可逆加加密保存到数据库
  * Created by: MoJie
  * Date: 2019/1/21
  */
@@ -31,12 +32,12 @@ router.all('/*', (req, res, next) => {
 
 // 登录
 function signIn(params, res) {
-    let {data, collection} = params;
     let ctrl = 'findOne';
-    let pwd = data.password;
-    let param = {projection: {_id: 0}};
-    delete data.password;
-    params = {collection, ctrl, data, param};
+    let {data: query, collection} = params;
+    let pwd = query.password;
+    let options = {projection: {_id: 0}};
+    delete query.password;
+    params = {collection, ctrl, ops: [query, options]};
     db.connect(params).then((data) => {
         if (data && data.password === generateHmac(decrypt(pwd))) {
             let token = jwt.generateToken(data.id);
@@ -68,16 +69,16 @@ function signIn(params, res) {
 
 // 注册
 function signUp(params, res) {
-    let {data, collection} = params;
     let ctrl = 'insertOne';
+    let {data: doc, collection} = params;
     try {
-        data.password = generateHmac(decrypt(data.password));
+        doc.password = generateHmac(decrypt(doc.password));
     } catch (e) {
         return res.status(400).send(e);
     }
-    data.id = data._id = db.ObjectID().toString();
-    data.createTime = +new Date();
-    params = {collection, ctrl, data};
+    doc.id = doc._id = db.ObjectID().toString();
+    doc.createTime = +new Date();
+    params = {collection, ctrl, ops: [doc]};
     db.connect(params).then(
         data => res.send(data),
         err => res.status(400).end(err)

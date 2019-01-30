@@ -11,47 +11,21 @@ const db = require('../mongodb/connect');
 const multiparty = require('multiparty');
 const chalk = require('chalk');
 const red = chalk.bold.red;
-const log = console.log;
 const router = express();
 
+const log = console.log;
 const reduce = {
-    tree() {
-        let params;
-        let notData;
-        let ctrl = 'find';
-        let {data, collection} = this.params;
-        let param = {
-            sort: {sort: 1},
-            projection: {_id: 0}
-        };
-        data = Object.keys(data).length ? data : {parent: null};
-        notData = Object.assign({}, data);
-        for (let key in notData) {
-            if (notData.hasOwnProperty(key)) {
-                notData[key] = {$ne: notData[key]};
-            }
-        }
-        return new Promise((resolve, reject) => {
-            let getRootPas = {collection, ctrl, data, param};
-            let getChildPas = {collection, ctrl, data: notData, param};
-            let getRoot = db.connect(getRootPas);
-            let getChild = db.connect(getChildPas);
-            Promise.all([getRoot, getChild]).then((data) => {
-                resolve(data);
-            }, reject);
-        });
-    },
     add() {
         let params;
         let ctrl = 'insertMany';
         let {data, collection} = this.params;
         let isArray = Array.isArray(data);
-        if (!isArray) data = [data];
-        data.forEach((item) => {
+        let docs = isArray ? data : [data];
+        docs.forEach((item) => {
             item.id = item._id = db.ObjectID().toString();
             item.createTime = +new Date();
         });
-        params = {collection, ctrl, data};
+        params = {collection, ctrl, ops: [docs]};
         return new Promise((resolve, reject) => {
             db.connect(params).then((data) => {
                 data = Object.assign({data: isArray ? data.ops : data.ops[0]}, data.result);
@@ -59,28 +33,65 @@ const reduce = {
             }, reject);
         })
     },
+    tree() {
+        let ctrl = 'find';
+        let {data, collection} = this.params;
+        let options = {
+            sort: {sort: 1},
+            projection: {_id: 0}
+        };
+        let query = Object.keys(data).length ? data : {parentId: null};
+        let neQuery = Object.assign({}, query);
+        for (let key in neQuery) {
+            if (neQuery.hasOwnProperty(key)) {
+                neQuery[key] = {$ne: neQuery[key]};
+            }
+        }
+        return new Promise((resolve, reject) => {
+            let getRootPas = {collection, ctrl, ops: [query, options]};
+            let getChildPas = {collection, ctrl, ops: [neQuery, options]};
+            let getRoot = db.connect(getRootPas);
+            let getChild = db.connect(getChildPas);
+            Promise.all([getRoot, getChild]).then((data) => {
+                data[0].forEach((root) => {
+                    appendToRoot(root, data[1]);
+                });
+                resolve(data[0]);
+
+                function appendToRoot(root, nodes) {
+                    root.children = [];
+                    for (let i = nodes.length; i--;) {
+                        if (nodes[i] && root.id === nodes[i].parentId) {
+                            root.children.push(...nodes.splice(i, 1));
+                            appendToRoot(root.children[root.children.length - 1], nodes);
+                        }
+                    }
+                }
+            }, reject);
+        });
+    },
     find() {
         let params;
         let ctrl = 'find';
-        let {data, collection} = this.params;
-        let param = {
+        let {data: query, collection} = this.params;
+        let options = {
             sort: {createTime: 1},
             projection: {_id: 0, password: 0}
         };
-        if (data.exact) {
-            delete data.exact;
+        if (query.exact) {
+            delete query.exact;
         } else {
-            for (let key in data) {
-                if (data.hasOwnProperty(key)) {
-                    if (typeof data[key] === 'string' && key !== 'id') {
-                        data[key] = {$regex: data[key]};
-                    } else if (Array.isArray(data[key])) {
-                        data[key] = {$in: data[key]}
+            for (let key in query) {
+                if (query.hasOwnProperty(key)) {
+                    if (typeof query[key] === 'string' && key !== 'id') {
+                        query[key] = {$regex: query[key]};
+                    } else if (Array.isArray(query[key])) {
+                        query[key] = {$in: query[key]}
                     }
                 }
             }
         }
-        params = {collection, ctrl, data, param};
+        params = {collection, ctrl, ops: [query, options]};
         return new Promise((resolve, reject) => {
             db.connect(params).then((data) => resolve({
                 ok: 1, data
@@ -89,12 +100,12 @@ const reduce = {
     },
     findOne() {
         let ctrl = 'findOne';
-        let {data, collection} = this.params;
-        let param = {
+        let {data: query, collection} = this.params;
+        let options = {
             sort: {createTime: 1},
             projection: {_id: 0, password: 0}
         };
-        let params = {collection, ctrl, data, param};
+        let params = {collection, ctrl, ops: [query, options]};
         return new Promise((resolve, reject) => {
             db.connect(params).then((data) => resolve({
                 ok: 1, data
@@ -104,32 +115,32 @@ const reduce = {
     findPage() {
         let getDataCtrl = 'find';
         let getTotalCtrl = 'countDocuments';
-        let {data, collection} = this.params;
-        let {page, rows, pageSize, exact} = data;
-        let param = {
+        let {data: query, collection} = this.params;
+        let {page, rows, pageSize, exact} = query;
+        let options = {
             sort: {createTime: 1},
             projection: {_id: 0, password: 0}
         };
-        delete data.exact;
-        delete data.page;
-        delete data.rows;
-        delete data.pageSize;
+        delete query.exact;
+        delete query.page;
+        delete query.rows;
+        delete query.pageSize;
         page = parseInt(page);
         pageSize = parseInt((pageSize || rows));
         page = (page && page > 0) ? page : 1;
         pageSize = (pageSize && pageSize > 0) ? pageSize : 10;
-        param.limit = pageSize;
-        param.skip = (page - 1) * pageSize;
+        options.limit = pageSize;
+        options.skip = (page - 1) * pageSize;
         if (!exact) {
-            for (let key in data) {
-                if (data.hasOwnProperty(key) && typeof data[key] === 'string' && key !== "id") {
-                    data[key] = {$regex: data[key]};
+            for (let key in query) {
+                if (query.hasOwnProperty(key) && typeof query[key] === 'string' && key !== "id") {
+                    query[key] = {$regex: query[key]};
                 }
             }
         }
         return new Promise((resolve, reject) => {
-            let getDataPas = {collection, ctrl: getDataCtrl, data, param};
-            let getTotalPas = {collection, ctrl: getTotalCtrl, data};
+            let getDataPas = {collection, ctrl: getDataCtrl, ops: [query, options]};
+            let getTotalPas = {collection, ctrl: getTotalCtrl, ops: [query]};
             let getData = db.connect(getDataPas);
             let getTotal = db.connect(getTotalPas);
             Promise.all([getData, getTotal]).then((data) => {
@@ -150,9 +161,9 @@ const reduce = {
         let params;
         let ctrl = 'updateOne';
         let {data, collection} = this.params;
-        let param = {$set: data};
-        data = {id: data.id};
-        params = {collection, ctrl, data, param};
+        let filter = {id: data.id};
+        let update = {$set: data};
+        params = {collection, ctrl, ops: [filter, update]};
         return new Promise((resolve, reject) => {
             if (data.id) {
                 db.connect(params).then(resolve, reject);
@@ -162,15 +173,15 @@ const reduce = {
         });
     },
     updateMany() {
-        let param;
         let params;
         let ctrl = 'updateMany';
         let {data, collection} = this.params;
+        let filter = data.filter;
+        let update = data.update;
         return new Promise((resolve, reject) => {
-            if (_util.isObject(data.filter) && _util.isObject(data.update)) {
-                param = {$set: data.update};
-                data = data.filter;
-                params = {collection, ctrl, data, param};
+            if (_util.isObject(filter) && _util.isObject(filter)) {
+                update = {$set: update};
+                params = {collection, ctrl, ops: [filter, update]};
                 db.connect(params).then(resolve, reject);
             } else {
                 reject('filter or update attribute is not object');
@@ -180,13 +191,13 @@ const reduce = {
     remove() {
         let params;
         let ctrl = 'deleteMany';
-        let {data, collection} = this.params;
-        for (let key in data) {
-            if (data.hasOwnProperty(key) && Array.isArray(data[key])) {
-                data[key] = {$in: data[key]}
+        let {data: filter, collection} = this.params;
+        for (let key in filter) {
+            if (filter.hasOwnProperty(key) && Array.isArray(filter[key])) {
+                filter[key] = {$in: filter[key]}
             }
         }
-        params = {collection, ctrl, data};
+        params = {collection, ctrl, ops: [filter]};
         return new Promise((resolve, reject) => {
             if (Object.keys(data).length) {
                 db.connect(params).then(({result}) => resolve(result), reject);
@@ -279,6 +290,7 @@ const reduce = {
 };
 
 router.all('/*', (req, res, next) => {
+    console.log(req.baseUrl);
     let data = req._data;
     let path = req.params['0'].split('/');
     let type = path.pop();
@@ -296,32 +308,3 @@ router.all('/*', (req, res, next) => {
 });
 
 module.exports = router;
-let a = [{
-    "_id": "1",
-    "name": "1",
-    "parent": null,
-}, {
-    "_id": "1-1",
-    "name": "1-1",
-    "parent": "1"
-}, {
-    "_id": "1-2",
-    "name": "1-2",
-    "parent": "1"
-}, {
-    "_id": "1-1-1",
-    "name": "1-1-1",
-    "parent": "1-1"
-}, {
-    "_id": "1-1-2",
-    "name": "1-1-2",
-    "parent": "1-1"
-}, {
-    "_id": "1-2-1",
-    "name": "1-2-1",
-    "parent": "1-2"
-}, {
-    "_id": "1-2-1-1",
-    "name": "1-2-1-1",
-    "parent": "1-2-1"
-}];

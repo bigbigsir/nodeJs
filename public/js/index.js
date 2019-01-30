@@ -17,6 +17,8 @@ $("#btn").on("click", function () {
     };
     oReq.send(oMyForm);
 });
+var time = Date.now();
+
 
 $.ajax({
     url: "/api/tree/tree",
@@ -24,9 +26,11 @@ $.ajax({
     contentType: 'application/json',
     // data: JSON.stringify({name:"1"}),
     success: function (data) {
+        console.log(Date.now() - time);
         console.log(data);
     }
 });
+
 
 // $.post('/api/role/add', {
 //    name:"mojie"
@@ -46,6 +50,7 @@ $.ajax({
 //     console.log(data)
 // });
 
+// 登录
 // $.get('/util/getPublicKey', function (data) {
 //     let key = data.key;
 //     let crypt = new JSEncrypt();
@@ -63,6 +68,7 @@ $.ajax({
 //     });
 // });
 
+// 注册
 // $.get('/util/getPublicKey', function (data) {
 //     let key = data.key;
 //     let crypt = new JSEncrypt();
@@ -181,3 +187,4 @@ let removeData = JSON.stringify({
 //         console.log(data);
 //     }
 // });
+
