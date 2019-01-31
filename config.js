@@ -3,7 +3,7 @@
  * Date: 2019/1/15
  */
 
-const config = {
+const Config = {
     host: '127.0.0.1',
     port: 3000,
     sessionOps: {
@@ -20,4 +20,4 @@ const config = {
     dbOptions: {useNewUrlParser: true}
 };
 
-module.exports = config;
+module.exports = Config;

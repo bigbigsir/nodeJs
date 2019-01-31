@@ -4,16 +4,41 @@
  */
 'use strict';
 
-const fs = require('fs');
-const express = require('express');
-const pinyin = require('node-pinyin');
-const router = express();
+const Fs = require('fs');
+const Express = require('express');
+const Pinyin = require('node-pinyin');
+const Router = Express();
 
-router.all('/*', (req, res, next) => {
+// 获取中文拼音
+function getPinYin(options, res) {
+    let result;
+    let {data, style} = options;
+    let str = data.string;
+    if (typeof str === 'string') {
+        result = Pinyin(str, {style});
+        result = Array.prototype.concat.apply([], result);
+        res.send({
+            data: result,
+            ok: 1
+        });
+    } else {
+        return res.status(400).send('param has to be a string');
+    }
+}
+
+// 获取公钥
+function getPublicKey(options, res) {
+    let publicKey = Fs.readFileSync('./pem/rsa_public_key.pem').toString();
+    res.send({
+        key: publicKey,
+        ok: 1
+    });
+}
+
+Router.all('/*', (req, res, next) => {
     let data = req._data;
     let path = req.params['0'].split('/');
     let type = path.pop();
-    let collection = path.shift();
     let options = {data, path};
     switch (type) {
         case 'getPublicKey':
@@ -29,30 +54,4 @@ router.all('/*', (req, res, next) => {
     }
 });
 
-// 获取中文拼音
-function getPinYin(options, res) {
-    let result;
-    let {data, style} = options;
-    let str = data.string;
-    if (typeof str === 'string') {
-        result = pinyin(str, {style});
-        result = Array.prototype.concat.apply([], result);
-        res.send({
-            data: result,
-            ok: 1
-        });
-    } else {
-        return res.status(400).send('param has to be a string');
-    }
-}
-
-// 获取公钥
-function getPublicKey(options, res) {
-    let publicKey = fs.readFileSync('./pem/rsa_public_key.pem').toString();
-    res.send({
-        key: publicKey,
-        ok: 1
-    });
-}
-
-module.exports = router;
+module.exports = Router;

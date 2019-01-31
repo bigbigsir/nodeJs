@@ -5,30 +5,13 @@
  */
 'use strict';
 
-const fs = require('fs');
-const crypto = require('crypto');
-const express = require('express');
-const jwt = require('../common/token');
-const db = require('../mongodb/connect');
-const router = express();
+const Fs = require('fs');
+const Crypto = require('crypto');
+const Express = require('express');
+const Jwt = require('../common/token');
+const DB = require('../mongodb/connect');
 
-router.all('/*', (req, res, next) => {
-    let data = req._data;
-    let path = req.params['0'].split('/');
-    let type = path.pop();
-    let collection = 'user';
-    let params = {data, collection};
-    switch (type) {
-        case 'signIn':
-            return signIn(params, res);
-        case 'signUp':
-            return signUp(params, res);
-        case 'signOut':
-            return signOut(res);
-        default:
-            next();
-    }
-});
+const Router = Express();
 
 // 登录
 function signIn(params, res) {
@@ -38,9 +21,9 @@ function signIn(params, res) {
     let options = {projection: {_id: 0}};
     delete query.password;
     params = {collection, ctrl, ops: [query, options]};
-    db.connect(params).then((data) => {
+    DB.connect(params).then((data) => {
         if (data && data.password === generateHmac(decrypt(pwd))) {
-            let token = jwt.generateToken(data.id);
+            let token = Jwt.generateToken(data.id);
             delete data.password;
             res.cookie("token", token, {
                 maxAge: 1000 * 60 * 60 * 24
@@ -76,10 +59,10 @@ function signUp(params, res) {
     } catch (e) {
         return res.status(400).send(e);
     }
-    doc.id = doc._id = db.ObjectID().toString();
+    doc.id = doc._id = DB.ObjectID().toString();
     doc.createTime = +new Date();
     params = {collection, ctrl, ops: [doc]};
-    db.connect(params).then(
+    DB.connect(params).then(
         data => res.send(data),
         err => res.status(400).end(err)
     );
@@ -96,20 +79,38 @@ function signOut(res) {
 
 // 解密密文
 function decrypt(cipherText) {
-    let privateKey = fs.readFileSync('./pem/rsa_private_key.pem').toString();
+    let privateKey = Fs.readFileSync('./pem/rsa_private_key.pem').toString();
     let buffer = Buffer.from(cipherText, 'base64');
-    let decrypted = crypto.privateDecrypt({
+    let decrypted = Crypto.privateDecrypt({
         key: privateKey,
-        padding: crypto.constants.RSA_PKCS1_PADDING
+        padding: Crypto.constants.RSA_PKCS1_PADDING
     }, buffer);
     return decrypted.toString();
 }
 
 // Hmac加密
 function generateHmac(str) {
-    let privateKey = fs.readFileSync('./pem/rsa_private_key.pem');
-    let md5 = crypto.createHmac('md5', privateKey);
+    let privateKey = Fs.readFileSync('./pem/rsa_private_key.pem');
+    let md5 = Crypto.createHmac('md5', privateKey);
     return md5.update(str).digest('hex');
 }
 
-module.exports = router;
+Router.all('/*', (req, res, next) => {
+    let data = req._data;
+    let path = req.params['0'].split('/');
+    let type = path.pop();
+    let collection = 'user';
+    let params = {data, collection};
+    switch (type) {
+        case 'signIn':
+            return signIn(params, res);
+        case 'signUp':
+            return signUp(params, res);
+        case 'signOut':
+            return signOut(res);
+        default:
+            next();
+    }
+});
+
+module.exports = Router;

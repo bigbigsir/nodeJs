@@ -2,23 +2,22 @@
  * Created by: MoJie
  * Date: 2018/9/3
  */
+
 // $.cookie('token', "", {expires: -1});
 // console.log(document.cookie);
 
 $("#btn").on("click", function () {
-    let oMyForm = new FormData($("#form")[0]);
-    oMyForm.append("name", "Groucho");
-    oMyForm.append("code", 123456);
-    oMyForm.append("obj", JSON.stringify({name: "obj"}));
-    let oReq = new XMLHttpRequest();
-    oReq.open("POST", "/api/file/upload", true);
-    oReq.onload = function (oEvent) {
+    let formData = new FormData($("#form")[0]);
+    formData.append("name", "Groucho");
+    formData.append("code", 123456);
+    formData.append("obj", JSON.stringify({name: "obj"}));
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/file/upload");
+    xhr.onload = function (oEvent) {
 
     };
-    oReq.send(oMyForm);
+    xhr.send(formData);
 });
-var time = Date.now();
-
 
 // $.ajax({
 //     url: "/api/tree/tree",
@@ -105,7 +104,7 @@ for (let i = 1, len = 11; i < len; i++) {
 //     type: "post",
 //     contentType: 'application/json',
 //     data: JSON.stringify({
-//         id: 1,
+//         id: 2,
 //         joinIds: [1,3]
 //     }),
 //     success: function (data) {
@@ -113,30 +112,30 @@ for (let i = 1, len = 11; i < len; i++) {
 //     }
 // });
 
-$.ajax({
-    url: "/api/product/orders/removeJoin",
-    type: "post",
-    contentType: 'application/json',
-    data: JSON.stringify({
-        id: 1,
-        joinIds: [1]
-    }),
-    success: function (data) {
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: "/api/product/orders/removeJoin",
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({
+//         id: 1,
+//         joinIds: [1]
+//     }),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 
-$.ajax({
-    url: "/api/product/orders/joinQuery",
-    type: "post",
-    contentType: 'application/json',
-    data: JSON.stringify({
-        id: 1
-    }),
-    success: function (data) {
-        console.log(data);
-    }
-});
+// $.ajax({
+//     url: "/api/product/orders/joinQuery",
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({
+//         id: 1
+//     }),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 
 // $.ajax({
 //     url: "/api/role/remove",

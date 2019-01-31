@@ -4,17 +4,18 @@
  */
 'use strict';
 
-const fs = require('fs');
+const Fs = require('fs');
+const Chalk = require('chalk');
+const Express = require('express');
+const Multiparty = require('multiparty');
+const DB = require('../mongodb/connect');
 const _util = require('../common/util');
-const express = require('express');
-const db = require('../mongodb/connect');
-const multiparty = require('multiparty');
-const chalk = require('chalk');
-const red = chalk.bold.red;
-const router = express();
 
-const log = console.log;
-const reduce = {
+const Red = Chalk.bold.red;
+const Router = Express();
+
+const Reduce = {
+    // 新增单个或多个数据到集合中
     add() {
         let params;
         let ctrl = 'insertMany';
@@ -22,23 +23,25 @@ const reduce = {
         let isArray = Array.isArray(data);
         let docs = isArray ? data : [data];
         docs.forEach((item) => {
-            item.id = item._id = db.ObjectID().toString();
+            item.id = item._id = DB.ObjectID().toString();
             item.createTime = +new Date();
         });
         params = {collection, ctrl, ops: [docs]};
         return new Promise((resolve, reject) => {
-            db.connect(params).then((data) => {
+            DB.connect(params).then((data) => {
                 data = Object.assign({data: isArray ? data.ops : data.ops[0]}, data.result);
                 resolve(data);
             }, reject);
         })
     },
+
+    // 查询条件匹配的树形数据，如果没有指定条件就查询parentId为null的树形数据
     tree() {
         let ctrl = 'find';
         let {data, collection} = this.params;
         let options = {
             sort: {sort: 1},
-            projection: {_id: 0}
+            projection: {_id: 0, password: 0}
         };
         let query = Object.keys(data).length ? data : {parentId: null};
         let neQuery = Object.assign({}, query);
@@ -50,8 +53,8 @@ const reduce = {
         return new Promise((resolve, reject) => {
             let getRootPas = {collection, ctrl, ops: [query, options]};
             let getChildPas = {collection, ctrl, ops: [neQuery, options]};
-            let getRoot = db.connect(getRootPas);
-            let getChild = db.connect(getChildPas);
+            let getRoot = DB.connect(getRootPas);
+            let getChild = DB.connect(getChildPas);
             Promise.all([getRoot, getChild]).then((data) => {
                 data[0].forEach((root) => {
                     appendToRoot(root, data[1]);
@@ -70,6 +73,9 @@ const reduce = {
             }, reject);
         });
     },
+
+    // 查找与指定条件匹配的多条数据，默认为模糊查询（可指定exact为true进行精确查找）
+    // 如果某个查询条件为数组，数组中的某一项值匹配，就会返回该数据；
     find() {
         let params;
         let ctrl = 'find';
@@ -93,11 +99,13 @@ const reduce = {
         }
         params = {collection, ctrl, ops: [query, options]};
         return new Promise((resolve, reject) => {
-            db.connect(params).then((data) => resolve({
+            DB.connect(params).then((data) => resolve({
                 ok: 1, data
             }), reject);
         });
     },
+
+    // 查找与指定条件匹配的第一条数据（单条查询）
     findOne() {
         let ctrl = 'findOne';
         let {data: query, collection} = this.params;
@@ -107,11 +115,13 @@ const reduce = {
         };
         let params = {collection, ctrl, ops: [query, options]};
         return new Promise((resolve, reject) => {
-            db.connect(params).then((data) => resolve({
+            DB.connect(params).then((data) => resolve({
                 ok: 1, data
             }), reject);
         });
     },
+
+    // 分页查询，默认为模糊查询（可指定exact为true进行精确查找）
     findPage() {
         let getDataCtrl = 'find';
         let getTotalCtrl = 'countDocuments';
@@ -141,8 +151,8 @@ const reduce = {
         return new Promise((resolve, reject) => {
             let getDataPas = {collection, ctrl: getDataCtrl, ops: [query, options]};
             let getTotalPas = {collection, ctrl: getTotalCtrl, ops: [query]};
-            let getData = db.connect(getDataPas);
-            let getTotal = db.connect(getTotalPas);
+            let getData = DB.connect(getDataPas);
+            let getTotal = DB.connect(getTotalPas);
             Promise.all([getData, getTotal]).then((data) => {
                 resolve({
                     ok: 1,
@@ -157,6 +167,8 @@ const reduce = {
             }, reject);
         });
     },
+
+    // 修改id匹配的单条数据；
     updateOne(update) {
         let params;
         let ctrl = 'updateOne';
@@ -166,28 +178,34 @@ const reduce = {
         params = {collection, ctrl, ops: [filter, update]};
         return new Promise((resolve, reject) => {
             if (data.id) {
-                db.connect(params).then(resolve, reject);
+                DB.connect(params).then(resolve, reject);
             } else {
                 reject('id arguments cannot be null');
             }
         });
     },
+
+    // 修改update属性匹配的多条数据
     updateMany() {
         let params;
         let ctrl = 'updateMany';
         let {data, collection} = this.params;
         let filter = data.filter;
         let update = data.update;
+        delete update.id;
+        delete update._id;
         return new Promise((resolve, reject) => {
             if (_util.isObject(filter) && _util.isObject(filter)) {
                 update = {$set: update};
                 params = {collection, ctrl, ops: [filter, update]};
-                db.connect(params).then(resolve, reject);
+                DB.connect(params).then(resolve, reject);
             } else {
                 reject('filter or update attribute is not object');
             }
         });
     },
+
+    // 删除与指定条件匹配的多条数据，禁止了无参数删除，否则会删除整个collection
     remove() {
         let params;
         let ctrl = 'deleteMany';
@@ -200,12 +218,14 @@ const reduce = {
         params = {collection, ctrl, ops: [filter]};
         return new Promise((resolve, reject) => {
             if (Object.keys(data).length) {
-                db.connect(params).then(({result}) => resolve(result), reject);
+                DB.connect(params).then(({result}) => resolve(result), reject);
             } else {
                 reject('arguments cannot be null');
             }
         });
     },
+
+    // 上传文件，如果附带其他参数，文件数据会在files属性中，否则返回上传文件信息数组
     upload(req) {
         let uploadDir = 'public/upload';
         let options = {
@@ -217,9 +237,9 @@ const reduce = {
             // maxFilesSize: Infinity,
             // maxFieldsSize: 1024 * 1024 * 2
         };
-        let form = new multiparty.Form(options);
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
+        let form = new Multiparty.Form(options);
+        if (!Fs.existsSync(uploadDir)) {
+            Fs.mkdirSync(uploadDir);
         }
         return new Promise((resolve, reject) => {
             form.parse(req, (err, fields, files) => {
@@ -240,7 +260,7 @@ const reduce = {
                                     url: '/upload/' + item.path.split('\\').pop(),
                                 });
                             } else {
-                                fs.unlink(item.path, (err) => err && log(red('delete file error:\n'), err, '\n'));
+                                Fs.unlink(item.path, (err) => err && console.log(Red('delete file error:\n'), err, '\n'));
                             }
                         })
                     }
@@ -261,6 +281,8 @@ const reduce = {
             });
         });
     },
+    // 查找id匹配的文件数据
+    // 使用文件路径删除文件，并删除该条数据
     removeFile() {
         return new Promise((resolve, reject) => {
             if (this.params.data.id) {
@@ -270,11 +292,11 @@ const reduce = {
                         if (item.files && item.files.length) {
                             item.files.forEach((item) => {
                                 fileTotal++;
-                                fs.unlink(item.path, (err) => err && log(red('delete file error:\n'), err, '\n'));
+                                Fs.unlink(item.path, (err) => err && console.log(Red('delete file error:\n'), err, '\n'));
                             })
                         } else {
                             fileTotal++;
-                            fs.unlink(item.path, (err) => err && log(red('delete file error:\n'), err, '\n'));
+                            Fs.unlink(item.path, (err) => err && console.log(Red('delete file error:\n'), err, '\n'));
                         }
                     });
                     this.remove().then(data => {
@@ -283,10 +305,12 @@ const reduce = {
                     }, reject);
                 }, reject);
             } else {
-                reject('id is not defined');
+                reject('id arguments cannot be null');
             }
         });
     },
+
+    // 查找匹配的数据，使用localField字段中的值在被关联集合中匹配foreignField的值
     joinQuery() {
         let ctrl = 'aggregate';
         let {data, path, collection} = this.params;
@@ -297,17 +321,17 @@ const reduce = {
                 $match: data,
             }, {
                 $lookup: {
-                    from: formCol,
-                    localField: localField,
-                    foreignField: 'id',
-                    as: localField
+                    from: formCol,          // 关联集合
+                    localField: localField, // 关联字段（用该字段中的值去匹配被关联字段的值）
+                    foreignField: 'id',     // 被关联的字段
+                    as: localField          // 查找的结果，返回字段
                 },
             },
         ];
         let params = {collection, ctrl, ops: [pipeline]};
         return new Promise((resolve, reject) => {
             if (formCol) {
-                db.connect(params).then((data) => {
+                DB.connect(params).then((data) => {
                     resolve({
                         ok: 1,
                         data: data[0] && data[0][localField]
@@ -318,6 +342,9 @@ const reduce = {
             }
         });
     },
+
+    // 查找id匹配的数据，将joinIds数组中的id，保存到collection_formCol字段中；
+    // collection指当前要操作的集合名字，formCol指被关联的集合名字
     createJoin() {
         let {data, path, collection} = this.params;
         let formCol = path[0];
@@ -333,6 +360,9 @@ const reduce = {
             return Promise.reject('collection to join cannot be null');
         }
     },
+
+    // 查找id匹配的数据，将collection_formCol字段中与joinIds数组中id匹配的值删除；
+    // collection指当前要操作的集合名字，formCol指被关联的集合名字
     removeJoin() {
         let {data, path, collection} = this.params;
         let formCol = path[0];
@@ -350,15 +380,15 @@ const reduce = {
     }
 };
 
-router.all('/*', (req, res, next) => {
+Router.all('/*', (req, res, next) => {
     let data = req._data;
     let path = req.params['0'].split('/');
     let type = path.pop();
     let collection = path.shift();
     let params = {data, path, collection};
-    if (collection && reduce.hasOwnProperty(type)) {
-        reduce.params = params;
-        reduce[type](req).then(
+    if (collection && Reduce.hasOwnProperty(type)) {
+        Reduce.params = params;
+        Reduce[type](req).then(
             data => res.send(data),
             err => res.status(400).send(err)
         );
@@ -367,4 +397,4 @@ router.all('/*', (req, res, next) => {
     }
 });
 
-module.exports = router;
+module.exports = Router;
