@@ -12,6 +12,7 @@ const Router = Express();
 function formatReqParam(req) {
     let data = (req.method === "GET") ? req.query : req.body;
     if (!(data instanceof Object)) data = Object.assign({}, data);
+    delete data._;
     req._data = data;
 }
 
@@ -26,22 +27,28 @@ function setHeader(req, res) {
     res.header("X-Powered-By", 'Express');
 }
 
-Router.all('/*', (req, res, next) => {
-    setHeader(req, res);
-    formatReqParam(req);
+// 接口权限认证
+function authorization(req, res, next) {
+    let token;
     if (req.method === 'OPTIONS') {
         res.sendStatus(200);
     } else if (/^\/(util|user)/.test(req.baseUrl)) {
         next();
     } else {
-        Jwt.verifyToken(req.cookies.token).then(() => next(), () => {
+        token = req.cookies.token || req.headers.authorization;
+        Jwt.verifyToken(token).then(() => next(), () => {
             res.status(401).send({
                 ok: 0,
-                status: 401,
-                msg: 'token无效，请登录'
+                msg: 'token无效或已过期，请登录'
             })
         });
     }
+}
+
+Router.all('/*', (req, res, next) => {
+    setHeader(req, res);
+    formatReqParam(req);
+    authorization(req, res, next);
 });
 
 module.exports = Router;

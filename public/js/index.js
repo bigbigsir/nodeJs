@@ -31,7 +31,7 @@ $("#btn").on("click", function () {
 // });
 
 
-// $.post('/api/role/add', {
+// $.post('/api/role/add1', {
 //    name:"mojie"
 // }, function (data) {
 //     console.log(data);
@@ -73,14 +73,14 @@ $("#btn").on("click", function () {
 //     let crypt = new JSEncrypt();
 //     crypt.setPublicKey(key);
 //     for (let i = 10; i--;) {
-//         let pwd = 'mojie' + i; //需要加密的账号密码
+//         let pwd = '12345' + i; //需要加密的账号密码
 //         let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
 //         $.ajax({
 //             url: '/user/signUp',
 //             type: "post",
 //             contentType: 'application/json',
 //             data: JSON.stringify({
-//                 name: 'mojie' + i,
+//                 name: 'name' + i,
 //                 code: '12345' + i,
 //                 password: encryptKey
 //             }),
@@ -94,10 +94,19 @@ $("#btn").on("click", function () {
 let addData = [];
 for (let i = 1, len = 11; i < len; i++) {
     addData.push({
-        name: "name" + i,
+        name: "管理员" + i,
         code: i
     })
 }
+// $.ajax({
+//     url: "/api/role/add",
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify(addData),
+//     success: function (data) {
+//         console.log(data);
+//     }
+// });
 
 // $.ajax({
 //     url: "/api/product/orders/createJoin",
