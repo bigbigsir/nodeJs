@@ -4,9 +4,15 @@
     <meta charset="UTcF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Node</title>
+    <style>
+        .a{
+            color: red;
+        }
+    </style>
 </head>
 <body>
 <h1>主页</h1>
+<img id="img" src="/util/getCaptcha" alt="">
 <form id="form" action="/api/file/upload" method="post" enctype="multipart/form-data">
     <p>
         <input name="file1" multiple type="file">

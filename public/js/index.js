@@ -7,28 +7,32 @@
 // console.log(document.cookie);
 
 $("#btn").on("click", function () {
-    let formData = new FormData($("#form")[0]);
-    formData.append("name", "Groucho");
-    formData.append("code", 123456);
-    formData.append("obj", JSON.stringify({name: "obj"}));
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/file/upload");
-    xhr.onload = function (oEvent) {
+  let formData = new FormData($("#form")[0]);
+  formData.append("name", "Groucho");
+  formData.append("code", 123456);
+  formData.append("obj", JSON.stringify({name: "obj"}));
+  let xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/file/upload");
+  xhr.onload = function (oEvent) {
 
-    };
-    xhr.send(formData);
+  };
+  xhr.send(formData);
 });
-
-// $.ajax({
-//     url: "/api/tree/tree",
-//     type: "post",
-//     contentType: 'application/json',
-//     // data: JSON.stringify({name:"1"}),
-//     success: function (data) {
-//         console.log(Date.now() - time);
-//         console.log(data);
-//     }
-// });
+$("#img").on('click', function () {
+  $(this).attr('src', '/util/getCaptcha' + '?' + Date.now())
+});
+$.ajax({
+  url: "/user/getUserInfo",
+  type: "get",
+  // contentType: 'application/json',
+  // data: {name: "1"},
+  success: function (data) {
+    // let img = document.getElementById('img');
+    // img.src = 'data:image/jpg;base64,' + data;
+    // $("#form").append(data)
+    // console.log(data);
+  }
+});
 
 
 // $.post('/api/role/add1', {
@@ -54,13 +58,13 @@ $("#btn").on("click", function () {
 //     let key = data.key;
 //     let crypt = new JSEncrypt();
 //     crypt.setPublicKey(key);
-//     let pwd = 'mojie1'; //需要加密的账号密码
+//     let pwd = '123456'; //需要加密的账号密码
 //     let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
 //     $.ajax({
 //         url: '/user/signIn',
 //         type: "post",
 //         contentType: 'application/json',
-//         data: JSON.stringify({name: 'mojie1', password: encryptKey}),
+//         data: JSON.stringify({code: '123456', password: encryptKey}),
 //         success: function (data) {
 //             console.log(data);
 //         }
@@ -93,10 +97,10 @@ $("#btn").on("click", function () {
 
 let addData = [];
 for (let i = 1, len = 11; i < len; i++) {
-    addData.push({
-        name: "管理员" + i,
-        code: i
-    })
+  addData.push({
+    name: "管理员" + i,
+    code: i
+  })
 }
 // $.ajax({
 //     url: "/api/role/add",
@@ -169,12 +173,12 @@ for (let i = 1, len = 11; i < len; i++) {
 // });
 
 var data = {
-    rows: 50,
-    page: 1,
-    exact1: true,
-    name: "name1",
-    code: 2,
-    exact: true
+  rows: 50,
+  page: 1,
+  exact1: true,
+  name: "name1",
+  code: 2,
+  exact: true
 };
 
 var jsonData = JSON.stringify(data);
@@ -190,14 +194,14 @@ var jsonData = JSON.stringify(data);
 // });
 
 let updateData1 = JSON.stringify({
-    filter: {name: "update1"},
-    update: {
-        name: "update"
-    }
+  filter: {name: "update1"},
+  update: {
+    name: "update"
+  }
 });
 let updateData2 = JSON.stringify({
-    id: 1,
-    product_orders: [1, 2]
+  id: 1,
+  product_orders: [1, 2]
 });
 
 // $.ajax({
@@ -221,7 +225,7 @@ let updateData2 = JSON.stringify({
 // });
 
 let removeData = JSON.stringify({
-    _id: ["5c4872821201a42064ca45ec", "5c4016628e7aa50db048b39f"],
+  _id: ["5c4872821201a42064ca45ec", "5c4016628e7aa50db048b39f"],
 });
 
 // $.ajax({
