@@ -14,11 +14,12 @@ const DB = require('../mongodb/connect');
 const Router = Express();
 
 // 登录
-function signIn(params, res) {
+function signIn(params, req, res) {
   let ctrl = 'findOne';
   let {data: query, collection} = params;
   let pwd = query.password;
   let options = {projection: {_id: 0}};
+  if (!verifyCaptcha(params, req, res)) return;
   delete query.password;
   params = {collection, ctrl, ops: [query, options]};
   DB.connect(params).then((data) => {
@@ -36,7 +37,7 @@ function signIn(params, res) {
       });
     } else {
       res.send({
-        ok: 1,
+        ok: 0,
         msg: '账号或者密码错误',
         token: null,
         user: null
@@ -51,9 +52,10 @@ function signIn(params, res) {
 }
 
 // 注册
-function signUp(params, res) {
+function signUp(params, req, res) {
   let ctrl = 'insertOne';
   let {data: doc, collection} = params;
+  if (!verifyCaptcha(params, req, res)) return;
   try {
     doc.password = generateHmac(decrypt(doc.password));
   } catch (e) {
@@ -66,6 +68,28 @@ function signUp(params, res) {
     data => res.send(data),
     err => res.status(400).end(err)
   );
+}
+
+// 验证验证码
+function verifyCaptcha(params, req, res) {
+  let {data} = params;
+  let captcha = data.captcha && data.captcha.toLowerCase();
+  let sessionCaptcha = req.session.captcha && req.session.captcha.toLowerCase();
+  delete req.session.captcha;
+  console.log(req.session);
+  if (sessionCaptcha) {
+    if (!captcha) {
+      res.send({ok: 0, msg: '请输入验证码'});
+      return false;
+    } else if (sessionCaptcha !== captcha) {
+      res.send({ok: 0, msg: '验证码错误'});
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    return true;
+  }
 }
 
 // 登出
@@ -87,14 +111,16 @@ function getUserInfo(params, req, res) {
   Jwt.verifyToken(token).then(({data}) => {
     query = {id: data};
     params = {collection, ctrl, ops: [query, options]};
-    DB.connect(params)
-      .then(data => res.send(data))
-      .catch(msg => res.status(400).send(msg))
+    DB.connect(params).then(
+      data => res.send(data),
+      msg => res.status(400).send(msg)
+    )
   })
 }
 
 // 解密密文
 function decrypt(cipherText) {
+  if (cipherText.length < 30) return cipherText;
   let privateKey = Fs.readFileSync('./pem/rsa_private_key.pem').toString();
   let buffer = Buffer.from(cipherText, 'base64');
   let decrypted = Crypto.privateDecrypt({
@@ -119,9 +145,9 @@ Router.all('/*', (req, res, next) => {
   let params = {data, collection};
   switch (type) {
     case 'signIn':
-      return signIn(params, res);
+      return signIn(params, req, res);
     case 'signUp':
-      return signUp(params, res);
+      return signUp(params, req, res);
     case 'signOut':
       return signOut(res);
     case 'getUserInfo':

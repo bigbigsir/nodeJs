@@ -21,18 +21,19 @@ $("#btn").on("click", function () {
 $("#img").on('click', function () {
   $(this).attr('src', '/util/getCaptcha' + '?' + Date.now())
 });
-$.ajax({
-  url: "/user/getUserInfo",
-  type: "get",
-  // contentType: 'application/json',
-  // data: {name: "1"},
-  success: function (data) {
-    // let img = document.getElementById('img');
-    // img.src = 'data:image/jpg;base64,' + data;
-    // $("#form").append(data)
-    // console.log(data);
-  }
-});
+
+// $.ajax({
+//   url: "/user/getUserInfo",
+//   type: "get",
+//   // contentType: 'application/json',
+//   // data: {name: "1"},
+//   success: function (data) {
+//     // let img = document.getElementById('img');
+//     // img.src = 'data:image/jpg;base64,' + data;
+//     // $("#form").append(data)
+//     // console.log(data);
+//   }
+// });
 
 
 // $.post('/api/role/add1', {
@@ -54,22 +55,22 @@ $.ajax({
 // });
 
 // 登录
-// $.get('/util/getPublicKey', function (data) {
-//     let key = data.key;
-//     let crypt = new JSEncrypt();
-//     crypt.setPublicKey(key);
-//     let pwd = '123456'; //需要加密的账号密码
-//     let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
-//     $.ajax({
-//         url: '/user/signIn',
-//         type: "post",
-//         contentType: 'application/json',
-//         data: JSON.stringify({code: '123456', password: encryptKey}),
-//         success: function (data) {
-//             console.log(data);
-//         }
-//     });
-// });
+$.get('/util/getPublicKey', function (data) {
+  let key = data.key;
+  let crypt = new JSEncrypt();
+  crypt.setPublicKey(key);
+  let pwd = '123456'; //需要加密的账号密码
+  let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+  $.ajax({
+    url: '/user/signIn',
+    type: "post",
+    contentType: 'application/json',
+    data: JSON.stringify({code: '123456', captcha: '10', password: encryptKey}),
+    success: function (data) {
+      console.log(data);
+    }
+  });
+});
 
 // 注册
 // $.get('/util/getPublicKey', function (data) {
