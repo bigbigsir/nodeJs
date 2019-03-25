@@ -217,8 +217,10 @@ const Reduce = {
     }
     params = {collection, ctrl, ops: [filter]};
     return new Promise((resolve, reject) => {
-      if (Object.keys(data).length) {
-        DB.connect(params).then(({result}) => resolve(result), reject);
+      if (Object.keys(filter).length) {
+        DB.connect(params).then(({result}) => {
+          resolve(result)
+        }, reject);
       } else {
         reject('arguments cannot be null');
       }
@@ -391,8 +393,11 @@ Router.all('/*', (req, res, next) => {
     Reduce.params = params;
     Reduce[type](req).then(
       data => res.send(data),
-      err => res.status(400).send(err)
-    );
+      err => {
+        res.status(400).send(err);
+        Red('router error:\n', err, "\n");
+      }
+    ).catch(err => Red('router error:\n', err, "\n"));
   } else {
     next();
   }

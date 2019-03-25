@@ -70,13 +70,21 @@ function signUp(params, req, res) {
   );
 }
 
+// 登出
+function signOut(res) {
+  res.clearCookie('token');
+  res.send({
+    ok: 1,
+    msg: '退出成功'
+  });
+}
+
 // 验证验证码
 function verifyCaptcha(params, req, res) {
   let {data} = params;
   let captcha = data.captcha && data.captcha.toLowerCase();
   let sessionCaptcha = req.session.captcha && req.session.captcha.toLowerCase();
   delete req.session.captcha;
-  console.log(req.session);
   if (sessionCaptcha) {
     if (!captcha) {
       res.send({ok: 0, msg: '请输入验证码'});
@@ -90,15 +98,6 @@ function verifyCaptcha(params, req, res) {
   } else {
     return true;
   }
-}
-
-// 登出
-function signOut(res) {
-  res.clearCookie('token');
-  res.send({
-    ok: 1,
-    msg: '退出成功'
-  });
 }
 
 // 获取当前登录用户信息

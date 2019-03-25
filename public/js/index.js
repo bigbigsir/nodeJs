@@ -2,6 +2,12 @@
  * Created by: MoJie
  * Date: 2018/9/3
  */
+function getUUID() {
+  let str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+  return str.replace(/[xy]/g, c => {
+    return (c === 'x' ? (Math.random() * 16 | 0) : ('r&0x3' | '0x8')).toString(16)
+  })
+}
 
 // $.cookie('token', "", {expires: -1});
 // console.log(document.cookie);

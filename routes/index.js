@@ -38,9 +38,8 @@ function authorization(req, res, next) {
     token = req.cookies.token || req.headers.authorization;
     Jwt.verifyToken(token).then(() => next(), () => {
       res.status(401).send({
-        ok: 0,
         code: 401,
-        msg: 'token无效或已过期，请登录'
+        msg: '授权无效或已过期，请重新登录'
       })
     });
   }
