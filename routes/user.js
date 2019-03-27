@@ -26,9 +26,6 @@ function signIn(params, req, res) {
     if (data && data.password === generateHmac(decrypt(pwd))) {
       let token = Jwt.generateToken(data.id);
       delete data.password;
-      res.cookie("token", token, {
-        maxAge: 1000 * 60 * 60 * 24
-      });
       res.send({
         ok: 1,
         msg: '登录成功',
@@ -44,9 +41,9 @@ function signIn(params, req, res) {
       });
     }
   }, (err) => {
-    res.status(400).read(err);
+    res.status(400).read(err.toString());
   }).catch((err) => {
-    res.status(400).send(err);
+    res.status(400).send(err.toString);
     console.error('login catch:', err);
   });
 }
@@ -72,7 +69,6 @@ function signUp(params, req, res) {
 
 // 登出
 function signOut(res) {
-  res.clearCookie('token');
   res.send({
     ok: 1,
     msg: '退出成功'
@@ -84,13 +80,14 @@ function verifyCaptcha(params, req, res) {
   let {data} = params;
   let captcha = data.captcha && data.captcha.toLowerCase();
   let sessionCaptcha = req.session.captcha && req.session.captcha.toLowerCase();
-  delete req.session.captcha;
-  if (sessionCaptcha) {
+  if (sessionCaptcha || captcha) {
     if (!captcha) {
       res.send({ok: 0, msg: '请输入验证码'});
       return false;
+    } else if (!sessionCaptcha) {
+      res.send({ok: 0, msg: '验证码已过期，请重新输入'});
     } else if (sessionCaptcha !== captcha) {
-      res.send({ok: 0, msg: '验证码错误'});
+      res.send({ok: 0, msg: '验证码错误，请重新输入'});
       return false;
     } else {
       return true;
@@ -114,6 +111,11 @@ function getUserInfo(params, req, res) {
       data => res.send(data),
       msg => res.status(400).send(msg)
     )
+  }, () => {
+    res.status(401).send({
+      code: 401,
+      msg: '授权无效或已过期，请重新登录'
+    })
   })
 }
 

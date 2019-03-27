@@ -10,7 +10,7 @@ const Config = {
     name: 'express-session',
     secret: 'emoji',
     cookie: {
-      maxAge: 2 * 60 * 1000
+      maxAge: 1000 * 60 * 0.5
     },
     resave: false,
     saveUninitialized: true

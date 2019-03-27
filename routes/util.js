@@ -7,8 +7,10 @@
 const Fs = require('fs');
 const Express = require('express');
 const Pinyin = require('node-pinyin');
-const Router = Express();
+const DB = require('../mongodb/connect');
 const svgCaptcha = require('svg-captcha');
+
+const Router = Express();
 
 // 获取中文拼音
 function getPinYin(options, res) {
@@ -40,16 +42,16 @@ function getPublicKey(options, res) {
 function getCaptcha(res, req) {
   // create 生成随机验证码
   // createMathExpr 生成数学公式
-  const cap = svgCaptcha.createMathExpr({
+  let captcha = svgCaptcha.createMathExpr({
     noise: 1,
-    width: 100,
+    width: 120,
     height: 40,
     fontSize: 40,
-    ignoreChars: '0o1ilI',
-    background: '#cfcfc5'
+    ignoreChars: '0o1ilI'
+    // background: '#cfcfc5'
   });
-  req.session.captcha = cap.text;
-  res.type('svg').send(cap.data)
+  req.session.captcha = captcha.text;
+  res.type('svg').send(captcha.data);
 }
 
 Router.all('/*', (req, res, next) => {
