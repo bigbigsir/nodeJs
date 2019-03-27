@@ -80,6 +80,7 @@ function verifyCaptcha(params, req, res) {
   let {data} = params;
   let captcha = data.captcha && data.captcha.toLowerCase();
   let sessionCaptcha = req.session.captcha && req.session.captcha.toLowerCase();
+  delete data.captcha;
   if (sessionCaptcha || captcha) {
     if (!captcha) {
       res.send({ok: 0, msg: '请输入验证码'});

@@ -61,46 +61,59 @@ $("#img").on('click', function () {
 // });
 
 // 登录
+// $.get('/util/getPublicKey', function (data) {
+//   let key = data.key;
+//   let crypt = new JSEncrypt();
+//   crypt.setPublicKey(key);
+//   let pwd = '123456'; //需要加密的账号密码
+//   let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+//   $.ajax({
+//     url: '/user/signIn',
+//     type: "post",
+//     contentType: 'application/json',
+//     data: JSON.stringify({code: '123456', captcha: '10', password: encryptKey}),
+//     success: function (data) {
+//       console.log(data);
+//     }
+//   });
+// });
+
+// 注册
 $.get('/util/getPublicKey', function (data) {
   let key = data.key;
   let crypt = new JSEncrypt();
   crypt.setPublicKey(key);
-  let pwd = '123456'; //需要加密的账号密码
-  let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
   $.ajax({
-    url: '/user/signIn',
+    url: '/user/signUp',
     type: "post",
     contentType: 'application/json',
-    data: JSON.stringify({code: '123456', captcha: '10', password: encryptKey}),
+    data: JSON.stringify({
+      userName: '123456',
+      code: '123456',
+      password: '123456'
+    }),
     success: function (data) {
       console.log(data);
     }
   });
+  // for (let i = 10; i--;) {
+  //     let pwd = '12345' + i; //需要加密的账号密码
+  //     let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+  //     $.ajax({
+  //         url: '/user/signUp',
+  //         type: "post",
+  //         contentType: 'application/json',
+  //         data: JSON.stringify({
+  //             name: 'name' + i,
+  //             code: '12345' + i,
+  //             password: encryptKey
+  //         }),
+  //         success: function (data) {
+  //             console.log(data);
+  //         }
+  //     });
+  // }
 });
-
-// 注册
-// $.get('/util/getPublicKey', function (data) {
-//     let key = data.key;
-//     let crypt = new JSEncrypt();
-//     crypt.setPublicKey(key);
-//     for (let i = 10; i--;) {
-//         let pwd = '12345' + i; //需要加密的账号密码
-//         let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
-//         $.ajax({
-//             url: '/user/signUp',
-//             type: "post",
-//             contentType: 'application/json',
-//             data: JSON.stringify({
-//                 name: 'name' + i,
-//                 code: '12345' + i,
-//                 password: encryptKey
-//             }),
-//             success: function (data) {
-//                 console.log(data);
-//             }
-//         });
-//     }
-// });
 
 let addData = [];
 for (let i = 1, len = 11; i < len; i++) {
