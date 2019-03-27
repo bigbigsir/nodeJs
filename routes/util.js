@@ -7,7 +7,6 @@
 const Fs = require('fs');
 const Express = require('express');
 const Pinyin = require('node-pinyin');
-const DB = require('../mongodb/connect');
 const svgCaptcha = require('svg-captcha');
 
 const Router = Express();
