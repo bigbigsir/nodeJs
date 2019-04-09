@@ -61,22 +61,29 @@
 // });
 
 // 登录
-$.get('/util/getPublicKey', function (data) {
-  var key = data.key;
-  var crypt = new JSEncrypt();
-  crypt.setPublicKey(key);
-  var pwd = '123456'; //需要加密的账号密码
-  var encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
-  $.ajax({
-    url: '/user/signIn',
-    type: "post",
-    data: {code: '123456', captcha: '10', password: encryptKey},
-    success: function (data) {
-      console.log(data);
-    }
-  });
+// $.get('/util/getPublicKey', function (data) {
+//   var key = data.key;
+//   var crypt = new JSEncrypt();
+//   crypt.setPublicKey(key);
+//   var pwd = '123451'; //需要加密的账号密码
+//   var encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+//   $.ajax({
+//     url: '/user/signIn',
+//     type: "post",
+//     data: {code: '123451', password: encryptKey},
+//     success: function (data) {
+//       $.cookie('token', data.token, {expires: 7});
+//       console.log(data);
+//     }
+//   });
+// });
+$.ajax({
+  url: '/user/getUserInfo',
+  type: "post",
+  success: function (data) {
+    console.log(data);
+  }
 });
-
 // 注册
 // $.get('/util/getPublicKey', function (data) {
 //   let key = data.key;
@@ -87,7 +94,7 @@ $.get('/util/getPublicKey', function (data) {
 //     type: "post",
 //     contentType: 'application/json',
 //     data: JSON.stringify({
-//       userName: '123456',
+//       userName: '123456111',
 //       code: '123456',
 //       password: '123456'
 //     }),

@@ -10,10 +10,12 @@ const Express = require('express');
 const Multiparty = require('multiparty');
 const DB = require('../mongodb/connect');
 const _util = require('../common/util');
-
+const languages = require('../language');
 const Router = Express();
 
-const Reduce = {
+let language;
+
+const reduce = {
   // 新增单个或多个数据到集合中
   add() {
     let params;
@@ -394,12 +396,17 @@ Router.all('/*', (req, res, next) => {
   let type = path.pop();
   let collection = path.shift();
   let params = {data, path, collection};
-  if (collection && Reduce.hasOwnProperty(type)) {
-    Reduce.params = params;
-    Reduce[type](req).then(
+  language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
+  if (collection && reduce.hasOwnProperty(type)) {
+    reduce.params = params;
+    reduce[type](req).then(
       data => res.send(data),
       err => {
-        res.status(400).send(err);
+        res.send({
+          ok: 0,
+          msg: language['errorMsg'],
+          reason: err.toString()
+        });
         console.log('router error:\n'.red.bold, err, "\n");
       }
     ).catch(err => {

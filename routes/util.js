@@ -42,12 +42,11 @@ function getCaptcha(res, req) {
   // create 生成随机验证码
   // createMathExpr 生成数学公式
   let captcha = svgCaptcha.createMathExpr({
-    noise: 1,
+    noise: 2,
     width: 120,
     height: 40,
     fontSize: 40,
     ignoreChars: '0o1ilI'
-    // background: '#cfcfc5'
   });
   req.session.captcha = captcha.text;
   res.type('svg').send(captcha.data);

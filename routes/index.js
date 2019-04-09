@@ -19,6 +19,7 @@ function formatReqParam(req) {
   }
   delete data._;
   req._data = data;
+  req._language = req.headers.language || 'zh-CN';
 }
 
 // 请求头/跨域设置
@@ -35,9 +36,9 @@ function setHeader(req, res) {
 // 接口权限认证
 function authorization(req, res, next) {
   let token;
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else if (/^\/(util|user)/.test(req.baseUrl)) {
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  formatReqParam(req);
+  if (/^\/(util|user)/.test(req.baseUrl)) {
     next();
   } else {
     token = req.cookies.token || req.headers.authorization;
@@ -53,7 +54,6 @@ function authorization(req, res, next) {
 
 Router.all('/*', (req, res, next) => {
   setHeader(req, res);
-  formatReqParam(req);
   authorization(req, res, next);
 });
 
