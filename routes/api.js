@@ -4,14 +4,13 @@
  */
 'use strict';
 
+require('colors');
 const Fs = require('fs');
-const Chalk = require('chalk');
 const Express = require('express');
 const Multiparty = require('multiparty');
 const DB = require('../mongodb/connect');
 const _util = require('../common/util');
 
-const Red = Chalk.bold.red;
 const Router = Express();
 
 const Reduce = {
@@ -59,14 +58,14 @@ const Reduce = {
         data[0].forEach((root) => {
           appendToRoot(root, data[1]);
         });
-        resolve(data[0]);
+        resolve({ok: 1, data: data[0]});
 
         function appendToRoot(root, nodes) {
           root.children = [];
           for (let i = nodes.length; i--;) {
             if (nodes[i] && root.id === nodes[i].parentId) {
-              root.children.push(...nodes.splice(i, 1));
-              appendToRoot(root.children[root.children.length - 1], nodes);
+              root.children.unshift(...nodes.splice(i, 1));
+              appendToRoot(root.children[0], nodes);
             }
           }
         }
@@ -169,12 +168,12 @@ const Reduce = {
   },
 
   // 修改id匹配的单条数据；
-  updateOne(update) {
+  updateOne(update, isInteriorCall) {
     let params;
     let ctrl = 'updateOne';
     let {data, collection} = this.params;
     let filter = {id: data.id};
-    update = update || {$set: data};
+    update = isInteriorCall ? update : {$set: data};
     params = {collection, ctrl, ops: [filter, update]};
     return new Promise((resolve, reject) => {
       if (data.id) {
@@ -262,7 +261,9 @@ const Reduce = {
                   url: '/upload/' + item.path.split('\\').pop(),
                 });
               } else {
-                Fs.unlink(item.path, (err) => err && console.log(Red('delete file error:\n'), err, '\n'));
+                Fs.unlink(item.path, (err) => {
+                  err && console.log('delete file error:\n'.red.bold, err, '\n')
+                });
               }
             })
           }
@@ -295,11 +296,15 @@ const Reduce = {
             if (item.files && item.files.length) {
               item.files.forEach((item) => {
                 fileTotal++;
-                Fs.unlink(item.path, (err) => err && console.log(Red('delete file error:\n'), err, '\n'));
+                Fs.unlink(item.path, (err) => {
+                  err && console.log('delete file error:\n'.red.bold, err, '\n')
+                });
               })
             } else {
               fileTotal++;
-              Fs.unlink(item.path, (err) => err && console.log(Red('delete file error:\n'), err, '\n'));
+              Fs.unlink(item.path, (err) => {
+                err && console.log('delete file error:\n'.red.bold, err, '\n')
+              })
             }
           });
           this.remove().then(data => {
@@ -358,7 +363,7 @@ const Reduce = {
       }
     };
     if (formCol) {
-      return this.updateOne(update);
+      return this.updateOne(update, true);
     } else {
       return Promise.reject('collection to join cannot be null');
     }
@@ -376,7 +381,7 @@ const Reduce = {
       }
     };
     if (formCol) {
-      return this.updateOne(update);
+      return this.updateOne(update, true);
     } else {
       return Promise.reject('collection to join cannot be null');
     }
@@ -395,9 +400,11 @@ Router.all('/*', (req, res, next) => {
       data => res.send(data),
       err => {
         res.status(400).send(err);
-        Red('router error:\n', err, "\n");
+        console.log('router error:\n'.red.bold, err, "\n");
       }
-    ).catch(err => Red('router error:\n', err, "\n"));
+    ).catch(err => {
+      console.log('router error:\n'.red.bold, err, "\n");
+    });
   } else {
     next();
   }

@@ -5,6 +5,7 @@
  */
 'use strict';
 
+require('colors');
 const Fs = require('fs');
 const Crypto = require('crypto');
 const Express = require('express');
@@ -44,7 +45,7 @@ function signIn(params, req, res) {
     res.status(400).read(err.toString());
   }).catch((err) => {
     res.status(400).send(err.toString);
-    console.error('login catch:', err);
+    console.log('login catch:'.red.bold, err);
   });
 }
 
@@ -69,6 +70,7 @@ function signUp(params, req, res) {
 
 // 登出
 function signOut(res) {
+  res.clearCookie('token');
   res.send({
     ok: 1,
     msg: '退出成功'
@@ -109,7 +111,7 @@ function getUserInfo(params, req, res) {
     query = {id: data};
     params = {collection, ctrl, ops: [query, options]};
     DB.connect(params).then(
-      data => res.send(data),
+      data => res.send({data, ok: 1}),
       msg => res.status(400).send(msg)
     )
   }, () => {

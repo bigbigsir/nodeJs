@@ -10,8 +10,13 @@ const Router = Express();
 
 // 处理请求参数
 function formatReqParam(req) {
+  let data = null;
   let {query, body} = req;
-  let data = Object.assign({}, query, body);
+  if (Array.isArray(body)) {
+    data = body
+  } else {
+    data = Object.assign({}, query, body);
+  }
   delete data._;
   req._data = data;
 }
@@ -21,7 +26,7 @@ function setHeader(req, res) {
   let {origin, Origin, referer, Referer} = req.headers;
   let allowOrigin = origin || Origin || referer || Referer || '*';
   res.header("Access-Control-Allow-Origin", allowOrigin);
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Language");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   res.header("Access-Control-Allow-Credentials", true); // 是否可以带cookies
   res.header("X-Powered-By", 'Express');
@@ -38,6 +43,7 @@ function authorization(req, res, next) {
     token = req.cookies.token || req.headers.authorization;
     Jwt.verifyToken(token).then(() => next(), () => {
       res.status(401).send({
+        ok: 0,
         code: 401,
         msg: '授权无效或已过期，请重新登录'
       })

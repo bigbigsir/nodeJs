@@ -4,19 +4,17 @@
  */
 'use strict';
 
-const Chalk = require('chalk');
+require('colors');
 const MongoDB = require('mongodb');
 const Config = require('../config');
 
-const Red = Chalk.bold.red;
-const Green = Chalk.bold.green;
 const ObjectID = MongoDB.ObjectID;
 const MongoClient = MongoDB.MongoClient;
 
 
 function connect(params) {
   let {collection, ctrl, ops} = params;
-  console.log(Green('\nparams:\n'), JSON.stringify(params), "\n");
+  console.log('\nparams:\n'.green.bold, JSON.stringify(params), "\n");
   return new Promise((resolve, reject) => {
     MongoClient.connect(Config.dbUrl, Config.dbOptions).then((client) => {
       const DB = client.db(Config.dbName);
@@ -29,14 +27,14 @@ function connect(params) {
       }, (err) => {
         reject(err.toString());
         client.close();
-        console.log(Red('mongodb collection ctrl error:\n'), err, "\n");
+        console.log('mongodb collection ctrl error:\n'.red.bold, err, "\n");
       });
     }, (err) => {
       reject(err.toString());
-      console.log(Red('mongodb client connection error:\n'), err, "\n");
+      console.log('mongodb client connection error:\n'.red.bold, err, "\n");
     }).catch((err) => {
       reject(err.toString());
-      console.log(Red('mongodb client error:\n'), err, "\n");
+      console.log('mongodb client error:\n'.red.bold, err, "\n");
     });
   });
 }

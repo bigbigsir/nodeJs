@@ -2,31 +2,31 @@
  * Created by: MoJie
  * Date: 2018/9/3
  */
-function getUUID() {
-  let str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-  return str.replace(/[xy]/g, c => {
-    return (c === 'x' ? (Math.random() * 16 | 0) : ('r&0x3' | '0x8')).toString(16)
-  })
-}
+// function getUUID() {
+//   let str = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+//   return str.replace(/[xy]/g, c => {
+//     return (c === 'x' ? (Math.random() * 16 | 0) : ('r&0x3' | '0x8')).toString(16)
+//   })
+// }
 
 // $.cookie('token', "", {expires: -1});
 // console.log(document.cookie);
 
-$("#btn").on("click", function () {
-  let formData = new FormData($("#form")[0]);
-  formData.append("name", "Groucho");
-  formData.append("code", 123456);
-  formData.append("obj", JSON.stringify({name: "obj"}));
-  let xhr = new XMLHttpRequest();
-  xhr.open("POST", "/api/file/upload");
-  xhr.onload = function (oEvent) {
-
-  };
-  xhr.send(formData);
-});
-$("#img").on('click', function () {
-  $(this).attr('src', '/util/getCaptcha' + '?' + Date.now())
-});
+// $("#btn").on("click", function () {
+//   let formData = new FormData($("#form")[0]);
+//   formData.append("name", "Groucho");
+//   formData.append("code", 123456);
+//   formData.append("obj", JSON.stringify({name: "obj"}));
+//   let xhr = new XMLHttpRequest();
+//   xhr.open("POST", "/api/file/upload");
+//   xhr.onload = function (oEvent) {
+//
+//   };
+//   xhr.send(formData);
+// });
+// $("#img").on('click', function () {
+//   $(this).attr('src', '/util/getCaptcha' + '?' + Date.now())
+// });
 
 // $.ajax({
 //   url: "/user/getUserInfo",
@@ -61,67 +61,49 @@ $("#img").on('click', function () {
 // });
 
 // 登录
+$.get('/util/getPublicKey', function (data) {
+  var key = data.key;
+  var crypt = new JSEncrypt();
+  crypt.setPublicKey(key);
+  var pwd = '123456'; //需要加密的账号密码
+  var encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
+  $.ajax({
+    url: '/user/signIn',
+    type: "post",
+    data: {code: '123456', captcha: '10', password: encryptKey},
+    success: function (data) {
+      console.log(data);
+    }
+  });
+});
+
+// 注册
 // $.get('/util/getPublicKey', function (data) {
 //   let key = data.key;
 //   let crypt = new JSEncrypt();
 //   crypt.setPublicKey(key);
-//   let pwd = '123456'; //需要加密的账号密码
-//   let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
 //   $.ajax({
-//     url: '/user/signIn',
+//     url: '/user/signUp',
 //     type: "post",
 //     contentType: 'application/json',
-//     data: JSON.stringify({code: '123456', captcha: '10', password: encryptKey}),
+//     data: JSON.stringify({
+//       userName: '123456',
+//       code: '123456',
+//       password: '123456'
+//     }),
 //     success: function (data) {
 //       console.log(data);
 //     }
 //   });
 // });
 
-// 注册
-$.get('/util/getPublicKey', function (data) {
-  let key = data.key;
-  let crypt = new JSEncrypt();
-  crypt.setPublicKey(key);
-  $.ajax({
-    url: '/user/signUp',
-    type: "post",
-    contentType: 'application/json',
-    data: JSON.stringify({
-      userName: '123456',
-      code: '123456',
-      password: '123456'
-    }),
-    success: function (data) {
-      console.log(data);
-    }
-  });
-  // for (let i = 10; i--;) {
-  //     let pwd = '12345' + i; //需要加密的账号密码
-  //     let encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
-  //     $.ajax({
-  //         url: '/user/signUp',
-  //         type: "post",
-  //         contentType: 'application/json',
-  //         data: JSON.stringify({
-  //             name: 'name' + i,
-  //             code: '12345' + i,
-  //             password: encryptKey
-  //         }),
-  //         success: function (data) {
-  //             console.log(data);
-  //         }
-  //     });
-  // }
-});
-
-let addData = [];
-for (let i = 1, len = 11; i < len; i++) {
-  addData.push({
-    name: "管理员" + i,
-    code: i
-  })
-}
+// let addData = [];
+// for (let i = 1, len = 11; i < len; i++) {
+//   addData.push({
+//     name: "管理员" + i,
+//     code: i
+//   })
+// }
 // $.ajax({
 //     url: "/api/role/add",
 //     type: "post",
@@ -212,17 +194,17 @@ var jsonData = JSON.stringify(data);
 //         console.log(data);
 //     }
 // });
-
-let updateData1 = JSON.stringify({
-  filter: {name: "update1"},
-  update: {
-    name: "update"
-  }
-});
-let updateData2 = JSON.stringify({
-  id: 1,
-  product_orders: [1, 2]
-});
+//
+// let updateData1 = JSON.stringify({
+//   filter: {name: "update1"},
+//   update: {
+//     name: "update"
+//   }
+// });
+// let updateData2 = JSON.stringify({
+//   id: 1,
+//   product_orders: [1, 2]
+// });
 
 // $.ajax({
 //     url: '/api/product/updateOne',
@@ -243,10 +225,10 @@ let updateData2 = JSON.stringify({
 //         console.log(data);
 //     }
 // });
-
-let removeData = JSON.stringify({
-  _id: ["5c4872821201a42064ca45ec", "5c4016628e7aa50db048b39f"],
-});
+//
+// let removeData = JSON.stringify({
+//   _id: ["5c4872821201a42064ca45ec", "5c4016628e7aa50db048b39f"],
+// });
 
 // $.ajax({
 //     url: '/api/role/remove',
