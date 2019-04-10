@@ -8,6 +8,7 @@ const Fs = require('fs');
 const Express = require('express');
 const Pinyin = require('node-pinyin');
 const svgCaptcha = require('svg-captcha');
+const DB = require('../mongodb/connect');
 const languages = require('../language');
 
 const Router = Express();
@@ -36,9 +37,10 @@ const reduce = {
     return Promise.resolve({key});
   },
   // 生成图片验证码
-  getCaptcha(req) {
+  getCaptcha() {
     // create 生成随机验证码
     // createMathExpr 生成数学公式
+    if (!this.params.reqData.uuid) return Promise.reject('uuid cannot be null');
     let captcha = svgCaptcha.createMathExpr({
       noise: 2,
       width: 120,
@@ -46,13 +48,20 @@ const reduce = {
       fontSize: 40,
       ignoreChars: '0o1ilI'
     });
-    req.session.captcha = captcha.text;
-    return Promise.resolve(captcha.data);
+    this.params.reqData = {
+      createTime: Date.now(),
+      uuid: this.params.reqData.uuid,
+      captcha: captcha.text.toLowerCase()
+    };
+    return DB.connect({
+      ctrl: 'insertOne',
+      collection: '_captcha',
+      ops: [this.params.reqData]
+    }).then(() => captcha.data);
   }
 };
 
 Router.all('/*', (req, res, next) => {
-  console.log(req.url);
   let reqData = req._requestParams;
   let path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/');
   let handle = path.pop();

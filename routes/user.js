@@ -9,6 +9,7 @@ require('colors');
 const Fs = require('fs');
 const Crypto = require('crypto');
 const Express = require('express');
+const CronJob = require('cron').CronJob;
 const Jwt = require('../common/token');
 const DB = require('../mongodb/connect');
 const languages = require('../language');
@@ -20,14 +21,14 @@ const reduce = {
   // 登录
   signIn(req) {
     let ctrl = 'findOne';
-    let {data: query, collection} = this.params;
+    let {reqData: query, collection} = this.params;
     let password = query.password;
     let options = {projection: {_id: 0}};
     let params = {collection, ctrl, ops: [query, options]};
-    let captchaIsPass = verifyCaptcha(query, req);
     delete query.password;
-    if (captchaIsPass) return Promise.reject({ok: 0, msg: captchaIsPass});
-    return DB.connect(params).then(data => {
+    return verifyCaptcha(query).then(() => {
+      return DB.connect(params)
+    }).then(data => {
       if (data && data.password === generateHmac(decrypt(password))) {
         let token = Jwt.generateToken(data.id);
         return {ok: 1, token}
@@ -39,7 +40,7 @@ const reduce = {
   // 注册
   signUp(req) {
     let ctrl = 'insertOne';
-    let {data: doc, collection} = this.params;
+    let {reqData: doc, collection} = this.params;
     let captchaIsPass = verifyCaptcha(doc, req);
     let params = {collection, ctrl, ops: [doc]};
     if (captchaIsPass) return Promise.reject({ok: 0, msg: captchaIsPass});
@@ -80,23 +81,35 @@ const reduce = {
 };
 
 // 验证验证码
-function verifyCaptcha(param, req) {
-  let captcha = param.captcha && param.captcha.toLowerCase();
-  let sessionCaptcha = req.session.captcha && req.session.captcha.toLowerCase();
+function verifyCaptcha(param) {
+  let uuid = param.uuid;
+  let captcha = param.captcha;
+  if (!uuid && !captcha) return Promise.resolve(null);
+  delete param.uuid;
   delete param.captcha;
-  if (sessionCaptcha || captcha) {
-    if (!captcha) {
-      return language['enterVerification'];
-    } else if (!sessionCaptcha) {
-      return language['expiredVerification'];
-    } else if (sessionCaptcha !== captcha) {
-      return language['wrongVerification'];
+  return DB.connect({
+    ctrl: 'findOne',
+    collection: '_captcha',
+    ops: [{uuid, captcha}]
+  }).then(data => {
+    if (!data) {
+      return Promise.reject({
+        ok: 0,
+        msg: language['wrongVerification']
+      });
+    } else if (data.createTime + 1000 * 60 < Date.now()) {
+      return Promise.reject({
+        ok: 0,
+        msg: language['expiredVerification']
+      });
     } else {
-      return false;
+      DB.connect({
+        ctrl: 'deleteOne',
+        collection: '_captcha',
+        ops: [{_id: data._id}]
+      })
     }
-  } else {
-    return false;
-  }
+  });
 }
 
 // 解密密文
@@ -119,11 +132,11 @@ function generateHmac(str) {
 }
 
 Router.all('/*', (req, res, next) => {
-  let data = req._requestParams;
+  let reqData = req._requestParams;
   let path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/');
   let handle = path.pop();
   let collection = 'user';
-  let params = {data, collection};
+  let params = {reqData, collection};
   language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
   if (reduce.hasOwnProperty(handle)) {
     reduce.params = params;
@@ -144,3 +157,12 @@ Router.all('/*', (req, res, next) => {
 });
 
 module.exports = Router;
+
+// 定时任务 每天04点0分0秒执行,清除验证码集合
+new CronJob('0 0 4 * * *', function () {
+  DB.connect({
+    collection: 'captcha',
+    ctrl: 'deleteMany',
+    ops: [{}]
+  });
+}, null, true);
