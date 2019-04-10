@@ -87,24 +87,24 @@
 // });
 
 // 注册
-// $.get('/util/getPublicKey', function (data) {
-//   let key = data.key;
-//   let crypt = new JSEncrypt();
-//   crypt.setPublicKey(key);
-//   $.ajax({
-//     url: '/user/signUp',
-//     type: "post",
-//     contentType: 'application/json',
-//     data: JSON.stringify({
-//       userName: 'admin',
-//       code: 'admin',
-//       password: 'admin'
-//     }),
-//     success: function (data) {
-//       console.log(data);
-//     }
-//   });
-// });
+$.get('/util/getPublicKey', function (data) {
+  let key = data.key;
+  let crypt = new JSEncrypt();
+  crypt.setPublicKey(key);
+  $.ajax({
+    url: '/user/signUp',
+    type: "post",
+    contentType: 'application/json',
+    data: JSON.stringify({
+      userName: 'admin1',
+      code: 'admin',
+      // password: 'admin'
+    }),
+    success: function (data) {
+      console.log(data);
+    }
+  });
+});
 
 // let addData = [];
 // for (let i = 1, len = 11; i < len; i++) {

@@ -19,7 +19,7 @@ let language;
 
 const reduce = {
   // 登录
-  signIn(req) {
+  signIn() {
     let ctrl = 'findOne';
     let {reqData: query, collection} = this.params;
     let password = query.password;
@@ -38,20 +38,16 @@ const reduce = {
     });
   },
   // 注册
-  signUp(req) {
+  signUp() {
     let ctrl = 'insertOne';
     let {reqData: doc, collection} = this.params;
-    let captchaIsPass = verifyCaptcha(doc, req);
     let params = {collection, ctrl, ops: [doc]};
-    if (captchaIsPass) return Promise.reject({ok: 0, msg: captchaIsPass});
-    try {
+    return verifyCaptcha(doc).then(() => {
       doc.password = generateHmac(decrypt(doc.password));
-    } catch (err) {
-      return Promise.reject(err);
-    }
-    doc.id = doc._id = DB.ObjectID().toString();
-    doc.createTime = +new Date();
-    return DB.connect(params);
+      doc.id = doc._id = DB.ObjectID().toString();
+      doc.createTime = +new Date();
+      return DB.connect(params);
+    });
   },
   // 登出
   signOut(req, res) {
