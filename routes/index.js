@@ -4,6 +4,7 @@
  */
 'use strict';
 
+require('colors');
 const Express = require('express');
 const Jwt = require('../common/token');
 const Router = Express();
@@ -18,8 +19,9 @@ function formatReqParam(req) {
     data = Object.assign({}, query, body);
   }
   delete data._;
-  req._data = data;
+  req._requestParams = data;
   req._language = req.headers.language || 'zh-CN';
+  console.log('Request Params:\n'.underline.green.bold, data, '\n')
 }
 
 // 请求头/跨域设置

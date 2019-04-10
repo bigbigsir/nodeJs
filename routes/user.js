@@ -30,12 +30,10 @@ const reduce = {
     return DB.connect(params).then(data => {
       if (data && data.password === generateHmac(decrypt(password))) {
         let token = Jwt.generateToken(data.id);
-        return {ok: 1, msg: 'success', token}
+        return {ok: 1, token}
       } else {
         return Promise.reject({ok: 0, msg: language['wrongPassword']})
       }
-    }).catch(err => {
-      return Promise.reject(err)
     });
   },
   // 注册
@@ -52,19 +50,12 @@ const reduce = {
     }
     doc.id = doc._id = DB.ObjectID().toString();
     doc.createTime = +new Date();
-    return DB.connect(params).then(data => {
-      return data
-    }).catch(err => {
-      return Promise.reject(err)
-    });
+    return DB.connect(params);
   },
   // 登出
   signOut(req, res) {
     res.clearCookie('token');
-    return Promise.resolve({
-      ok: 1,
-      msg: 'success'
-    })
+    return Promise.resolve({ok: 1})
   },
   // 获取当前登录用户信息
   getUserInfo(req) {
@@ -72,8 +63,8 @@ const reduce = {
     let {collection} = this.params;
     let options = {projection: {_id: 0, password: 0}};
     let token = req.cookies.token || req.headers.authorization;
-    return Jwt.verifyToken(token).then(({userId}) => {
-      let query = {id: userId};
+    return Jwt.verifyToken(token).then(({data}) => {
+      let query = {id: data};
       let params = {collection, ctrl, ops: [query, options]};
       return DB.connect(params)
     }, () => {
@@ -83,10 +74,7 @@ const reduce = {
         msg: language['tokenInvalid']
       })
     }).then(data => {
-        return {ok: 1, data}
-      }
-    ).catch(err => {
-      return Promise.reject(err)
+      return {ok: 1, data}
     })
   }
 };
@@ -131,22 +119,23 @@ function generateHmac(str) {
 }
 
 Router.all('/*', (req, res, next) => {
-  let data = req._data;
-  let path = req.params['0'].split('/');
-  let type = path.pop();
+  let data = req._requestParams;
+  let path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/');
+  let handle = path.pop();
   let collection = 'user';
   let params = {data, collection};
   language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
-  if (reduce.hasOwnProperty(type)) {
+  if (reduce.hasOwnProperty(handle)) {
     reduce.params = params;
-    reduce[type](req, res).then(data => {
+    reduce[handle](req, res).then(data => {
+      data.msg = 'success';
       res.send(data)
     }).catch(err => {
       if (err.ok !== undefined && err.msg !== undefined) {
         res.send(err);
       } else {
         res.send({ok: 0, msg: language['errorMsg'], error: err.toString()});
-        console.log('reduce err:\n'.red, err, '\n');
+        console.log('User Route Error:\n'.red.bold, err, '\n');
       }
     })
   } else {

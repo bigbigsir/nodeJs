@@ -11,32 +11,24 @@ const Config = require('../config');
 const ObjectID = MongoDB.ObjectID;
 const MongoClient = MongoDB.MongoClient;
 
-
 function connect(params) {
   let {collection, ctrl, ops} = params;
-  console.log('\nparams:\n'.green.bold, JSON.stringify(params), "\n");
-  return new Promise((resolve, reject) => {
-    MongoClient.connect(Config.dbUrl, Config.dbOptions).then((client) => {
-      const DB = client.db(Config.dbName);
-      const Collection = DB.collection(collection);
-      let result = Collection[ctrl](...ops);
-      if (ctrl === "find" || ctrl === "aggregate") result = result.toArray();
-      result.then((data) => {
-        resolve(data);
-        client.close();
-      }, (err) => {
-        reject(err.toString());
-        client.close();
-        console.log('mongodb collection ctrl error:\n'.red.bold, err, "\n");
-      });
-    }, (err) => {
-      reject(err.toString());
-      console.log('mongodb client connection error:\n'.red.bold, err, "\n");
-    }).catch((err) => {
-      reject(err.toString());
-      console.log('mongodb client error:\n'.red.bold, err, "\n");
+  console.log('\n MongoDB Params:\n'.green.bold, JSON.stringify(params), "\n");
+  return MongoClient.connect(Config.dbUrl, Config.dbOptions).then(client => {
+    const DB = client.db(Config.dbName);
+    const Collection = DB.collection(collection);
+    let result = Collection[ctrl](...ops);
+    if (ctrl === "find" || ctrl === "aggregate") result = result.toArray();
+    client.close(false).catch((err) => {
+      console.log('MongoDB Client Close Error:\n'.red.bold, err, "\n");
     });
-  });
+    return result
+  }).then(data => {
+    return data
+  }).catch(err => {
+    console.log('MongoDB Client Error: ↓↓↓\n'.underline.red.bold);
+    return Promise.reject(err)
+  })
 }
 
 module.exports = {

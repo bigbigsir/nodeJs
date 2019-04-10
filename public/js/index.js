@@ -65,25 +65,27 @@
 //   var key = data.key;
 //   var crypt = new JSEncrypt();
 //   crypt.setPublicKey(key);
-//   var pwd = '123451'; //需要加密的账号密码
+//   var pwd = 'admin'; //需要加密的账号密码
 //   var encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
 //   $.ajax({
 //     url: '/user/signIn',
 //     type: "post",
-//     data: {code: '123451', password: encryptKey},
+//     data: {code: 'admin', password: 'admin'},// encryptKey
 //     success: function (data) {
 //       $.cookie('token', data.token, {expires: 7});
 //       console.log(data);
 //     }
 //   });
 // });
-$.ajax({
-  url: '/user/getUserInfo',
-  type: "post",
-  success: function (data) {
-    console.log(data);
-  }
-});
+
+// $.ajax({
+//   url: '/user/getUserInfo',
+//   type: "post",
+//   success: function (data) {
+//     console.log(data);
+//   }
+// });
+
 // 注册
 // $.get('/util/getPublicKey', function (data) {
 //   let key = data.key;
@@ -94,9 +96,9 @@ $.ajax({
 //     type: "post",
 //     contentType: 'application/json',
 //     data: JSON.stringify({
-//       userName: '123456111',
-//       code: '123456',
-//       password: '123456'
+//       userName: 'admin',
+//       code: 'admin',
+//       password: 'admin'
 //     }),
 //     success: function (data) {
 //       console.log(data);
@@ -121,42 +123,44 @@ $.ajax({
 //     }
 // });
 
+// 创建关联
 // $.ajax({
-//     url: "/api/product/orders/createJoin",
-//     type: "post",
-//     contentType: 'application/json',
-//     data: JSON.stringify({
-//         id: 2,
-//         joinIds: [1,3]
-//     }),
-//     success: function (data) {
-//         console.log(data);
-//     }
+//   url: "/api/user/role/createJoin",
+//   type: "post",
+//   contentType: 'application/json',
+//   data: JSON.stringify({
+//     id: '5c8880718e6cf217d02a0afc',
+//     joinId: '5c88765a1f405a044c78e867'
+//   }),
+//   success: function (data) {
+//     console.log(data);
+//   }
 // });
-
+// 删除关联
 // $.ajax({
 //     url: "/api/product/orders/removeJoin",
 //     type: "post",
 //     contentType: 'application/json',
 //     data: JSON.stringify({
 //         id: 1,
-//         joinIds: [1]
+//         joinId: [1]
 //     }),
 //     success: function (data) {
 //         console.log(data);
 //     }
 // });
 
+// 关联查询
 // $.ajax({
-//     url: "/api/product/orders/joinQuery",
-//     type: "post",
-//     contentType: 'application/json',
-//     data: JSON.stringify({
-//         id: 1
-//     }),
-//     success: function (data) {
-//         console.log(data);
-//     }
+//   url: "/api/user/role/joinQuery",
+//   type: "post",
+//   contentType: 'application/json',
+//   data: JSON.stringify({
+//     id1: '5c8880718e6cf217d02a0afc'
+//   }),
+//   success: function (data) {
+//     console.log(data);
+//   }
 // });
 
 // $.ajax({
@@ -237,13 +241,16 @@ var jsonData = JSON.stringify(data);
 //   _id: ["5c4872821201a42064ca45ec", "5c4016628e7aa50db048b39f"],
 // });
 
-// $.ajax({
-//     url: '/api/role/remove',
-//     type: "DELETE",
-//     contentType: 'application/json',
-//     data: removeData,
-//     success: function (data) {
-//         console.log(data);
-//     }
-// });
+// 删除文件
+$.ajax({
+  url: '/api/file/removeFile',
+  type: "DELETE",
+  contentType: 'application/json',
+  data: JSON.stringify({
+    id: ['5cad8634e403700e9cda0ba6', '5cad8634e403700e9cda0ba7', '5cad8634e403700e9cda0ba8']
+  }),
+  success: function (data) {
+    console.log(data);
+  }
+});
 
