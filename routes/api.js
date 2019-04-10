@@ -157,11 +157,11 @@ const reduce = {
   },
 
   // 修改id匹配的单条数据；
-  updateOne(isInteriorCall, update) {
+  updateOne(req, isInteriorCall, update) {
     let ctrl = 'updateOne';
     let {reqData, collection} = this.params;
     let filter = {id: reqData.id};
-    update = isInteriorCall ? update : {$set: data};
+    update = isInteriorCall ? update : {$set: reqData};
     let params = {collection, ctrl, ops: [filter, update]};
     if (filter.id) {
       return DB.connect(params)
@@ -353,7 +353,7 @@ const reduce = {
       }
     };
     if (fromCollection && reqData['joinId']) {
-      return this.updateOne(true, update);
+      return this.updateOne(null, true, update);
     } else {
       return Promise.reject('fromCollection or joinId cannot be null');
     }
@@ -370,7 +370,7 @@ const reduce = {
       }
     };
     if (fromCollection && reqData['joinId']) {
-      return this.updateOne(true, update);
+      return this.updateOne(null, true, update);
     } else {
       return Promise.reject('fromCollection or joinId cannot be null');
     }
