@@ -24,7 +24,7 @@ const reduce = {
     let docs = isArray ? reqData : [reqData];
     docs.forEach((item) => {
       item.id = item._id = DB.ObjectID().toString();
-      item.createTime = +new Date();
+      item.createDate = +new Date();
     });
     let params = {collection, ctrl, ops: [docs]};
     return DB.connect(params).then(data => {
@@ -58,7 +58,7 @@ const reduce = {
       roots.forEach((root) => {
         appendToRoot(root, nodes);
       });
-      return {ok: 1, data: roots};
+      return {data: roots};
     });
 
     // 将子节点添加到根节点下，组成树形结构
@@ -79,7 +79,7 @@ const reduce = {
     let ctrl = 'find';
     let {reqData: query, collection} = this.params;
     let options = {
-      sort: {createTime: 1},
+      sort: {createDate: 1},
       projection: {_id: 0, password: 0}
     };
     if (query.exact) {
@@ -96,19 +96,18 @@ const reduce = {
       }
     }
     let params = {collection, ctrl, ops: [query, options]};
-    return DB.connect(params).then(data => ({ok: 1, data}));
+    return DB.connect(params).then(data => ({data}));
   },
 
   // 查找与指定条件匹配的第一条数据（单条查询）
-  findOne() {
+  findOne(req, isNeedPassword = 0) {
     let ctrl = 'findOne';
     let {reqData: query, collection} = this.params;
     let options = {
-      sort: {createTime: 1},
-      projection: {_id: 0, password: 0}
+      projection: {_id: 0, password: isNeedPassword}
     };
     let params = {collection, ctrl, ops: [query, options]};
-    return DB.connect(params).then(data => ({ok: 1, data}));
+    return DB.connect(params).then(data => ({data}));
   },
 
   // 分页查询，默认为模糊查询（可指定exact为true进行精确查找）
@@ -118,7 +117,7 @@ const reduce = {
     let {reqData: query, collection} = this.params;
     let {page, rows, pageSize, exact} = query;
     let options = {
-      sort: {createTime: 1},
+      sort: {createDate: 1},
       projection: {_id: 0, password: 0}
     };
     delete query.exact;
@@ -144,7 +143,6 @@ const reduce = {
     let getTotal = DB.connect(getTotalPas);
     return Promise.all([getData, getTotal]).then(data => {
       return {
-        ok: 1,
         data: {
           page: page,
           pageSize: pageSize,
@@ -157,11 +155,12 @@ const reduce = {
   },
 
   // 修改id匹配的单条数据；
-  updateOne(req, isInteriorCall, update) {
+  updateOne(req, update = null, banUpdateFields = ['password']) {
     let ctrl = 'updateOne';
     let {reqData, collection} = this.params;
     let filter = {id: reqData.id};
-    update = isInteriorCall ? update : {$set: reqData};
+    banUpdateFields.forEach(field => delete reqData[field]);
+    update = update ? update : {$set: reqData};
     let params = {collection, ctrl, ops: [filter, update]};
     if (filter.id) {
       return DB.connect(params)
@@ -178,6 +177,7 @@ const reduce = {
     let update = reqData.update;
     delete update.id;
     delete update._id;
+    delete update.password;
     if (_util.isObject(filter) && _util.isObject(update)) {
       update = {$set: update};
       let params = {collection, ctrl, ops: [filter, update]};
@@ -188,7 +188,7 @@ const reduce = {
   },
 
   // 删除与指定条件匹配的多条数据，禁止了无参数删除，否则会删除整个collection
-  remove() {
+  remove(req, allowAll = false) {
     let ctrl = 'deleteMany';
     let {reqData: filter, collection} = this.params;
     for (let key in filter) {
@@ -197,8 +197,8 @@ const reduce = {
       }
     }
     let params = {collection, ctrl, ops: [filter]};
-    if (Object.keys(filter).length) {
-      return DB.connect(params).then(data => data.result);
+    if (Object.keys(filter).length || allowAll) {
+      return DB.connect(params).then(data => ({...data.result}));
     } else {
       return Promise.reject('arguments cannot be null');
     }
@@ -303,7 +303,7 @@ const reduce = {
     }
   },
 
-  // 查找匹配的数据，使用localField字段中的值在被关联集合中匹配foreignField的值
+  // 查找id匹配的数据，使用localField字段中的值在被关联集合中匹配foreignField的值
   joinQuery() {
     let ctrl = 'aggregate';
     let {reqData, collection, fromCollection} = this.params;
@@ -312,7 +312,7 @@ const reduce = {
       {
         $match: reqData,
       }, {
-        $sort: {createTime: 1}
+        $sort: {createDate: 1}
       }, {
         $project: {_id: 0, password: 0}
       }, {
@@ -329,8 +329,7 @@ const reduce = {
     if (fromCollection && reqData.id) {
       return DB.connect(params).then(data => {
         return {
-          ok: 1,
-          data: data[0]
+          data: data[0] || null
         }
       });
     } else {
@@ -353,7 +352,7 @@ const reduce = {
       }
     };
     if (fromCollection && reqData['joinId']) {
-      return this.updateOne(null, true, update);
+      return this.updateOne(null, update);
     } else {
       return Promise.reject('fromCollection or joinId cannot be null');
     }
@@ -370,7 +369,7 @@ const reduce = {
       }
     };
     if (fromCollection && reqData['joinId']) {
-      return this.updateOne(null, true, update);
+      return this.updateOne(null, update);
     } else {
       return Promise.reject('fromCollection or joinId cannot be null');
     }
@@ -388,19 +387,29 @@ Router.all('/*', (req, res, next) => {
   if (collection && reduce.hasOwnProperty(handle)) {
     reduce.params = params;
     reduce[handle](req).then(data => {
-      data.msg = 'success';
+      data = Object.assign({
+        ok: 1,
+        msg: 'success'
+      }, data);
       res.send(data)
     }).catch(err => {
-      if (err.ok !== undefined && err.msg !== undefined) {
-        res.send(err);
+      if (typeof err.msg === 'string') {
+        err = Object.assign({
+          ok: 0,
+          msg: language['errorMsg']
+        }, err);
       } else {
-        res.send({ok: 0, msg: language['errorMsg'], error: err.toString()});
-        console.log('Api Route Error:\n'.red.bold, err, "\n");
+        err = {ok: 0, msg: language['errorMsg'], error: err.toString()};
+        console.log('User Route Error:\n'.red.bold, err, '\n');
       }
+      res.send(err);
     });
   } else {
     next();
   }
 });
 
-module.exports = Router;
+module.exports = {
+  api: reduce,
+  router: Router
+};

@@ -11,8 +11,8 @@ const Crypto = require('crypto');
 const Express = require('express');
 const CronJob = require('cron').CronJob;
 const Jwt = require('../common/token');
-const DB = require('../mongodb/connect');
 const languages = require('../language');
+const {api} = require('./api');
 const Router = Express();
 
 let language;
@@ -20,39 +20,80 @@ let language;
 const reduce = {
   // 登录
   signIn() {
-    let ctrl = 'findOne';
-    let {reqData: query, collection} = this.params;
+    let {reqData: query} = this.params;
     let password = query.password;
-    let options = {projection: {_id: 0}};
-    let params = {collection, ctrl, ops: [query, options]};
     delete query.password;
     return verifyCaptcha(query).then(() => {
-      return DB.connect(params)
-    }).then(data => {
+      delete query.uuid;
+      delete query.captcha;
+      api.params = this.params;
+      return api.findOne(null, 1);
+    }).then(({data}) => {
+      console.log(data);
+      console.log(data.password);
+      console.log(generateHmac(decrypt(password)));
       if (data && data.password === generateHmac(decrypt(password))) {
         let token = Jwt.generateToken(data.id);
-        return {ok: 1, token}
+        return {token}
       } else {
-        return Promise.reject({ok: 0, msg: language['wrongPassword']})
+        return Promise.reject({msg: language['wrongPassword']})
       }
     });
   },
   // 注册
   signUp() {
-    let ctrl = 'insertOne';
-    let {reqData: doc, collection} = this.params;
-    let params = {collection, ctrl, ops: [doc]};
+    let {reqData: doc} = this.params;
     return verifyCaptcha(doc).then(() => {
+      delete doc.uuid;
+      delete doc.captcha;
       doc.password = generateHmac(decrypt(doc.password));
-      doc.id = doc._id = DB.ObjectID().toString();
-      doc.createTime = +new Date();
-      return DB.connect(params);
+      api.params = this.params;
+      return api.add();
     });
   },
   // 登出
   signOut(req, res) {
     res.clearCookie('token');
-    return Promise.resolve({ok: 1})
+    return Promise.resolve({})
+  },
+  // 修改密码
+  changePassword() {
+    let {reqData: query, collection} = this.params;
+    let password = query.password;
+    let originalPassword = query.originalPassword;
+    delete query.password;
+    delete query.originalPassword;
+    if (password && originalPassword) {
+      api.params = {
+        collection,
+        reqData: {
+          password: generateHmac(decrypt(originalPassword))
+        }
+      };
+      if (query.id) {
+        // 如果有id，这使用id匹配数据
+        Object.assign(api.params.reqData, {id: query.id});
+      } else {
+        // 如果没有id，这使用所有请求参数匹配
+        Object.assign(api.params.reqData, query);
+      }
+      return api.findOne().then(({data}) => {
+        if (data) {
+          api.params = {
+            collection,
+            reqData: {
+              ...query,
+              password: generateHmac(decrypt(password)),
+            }
+          };
+          return api.updateOne(null, null, [])
+        } else {
+          return Promise.reject({msg: language['wrongPassword']})
+        }
+      });
+    } else {
+      return Promise.reject('Missing Parameters')
+    }
   },
   // 获取当前登录用户信息
   getUserInfo(req) {
@@ -61,17 +102,18 @@ const reduce = {
     let options = {projection: {_id: 0, password: 0}};
     let token = req.cookies.token || req.headers.authorization;
     return Jwt.verifyToken(token).then(({data}) => {
-      let query = {id: data};
-      let params = {collection, ctrl, ops: [query, options]};
-      return DB.connect(params)
+      api.params = {
+        collection,
+        reqData: {id: data}
+      };
+      return api.findOne();
     }, () => {
       return Promise.reject({
-        ok: 0,
         code: 401,
         msg: language['tokenInvalid']
       })
     }).then(data => {
-      return {ok: 1, data}
+      return {data}
     })
   }
 };
@@ -81,29 +123,21 @@ function verifyCaptcha(param) {
   let uuid = param.uuid;
   let captcha = param.captcha;
   if (!uuid && !captcha) return Promise.resolve(null);
-  delete param.uuid;
-  delete param.captcha;
-  return DB.connect({
-    ctrl: 'findOne',
+  api.params = {
     collection: '_captcha',
-    ops: [{uuid, captcha}]
-  }).then(data => {
+    reqData: {uuid, captcha}
+  };
+  return api.findOne().then(({data}) => {
     if (!data) {
       return Promise.reject({
-        ok: 0,
         msg: language['wrongVerification']
       });
-    } else if (data.createTime + 1000 * 60 < Date.now()) {
+    } else if (data.createDate + 1000 * 60 < Date.now()) {
       return Promise.reject({
-        ok: 0,
         msg: language['expiredVerification']
       });
     } else {
-      DB.connect({
-        ctrl: 'deleteOne',
-        collection: '_captcha',
-        ops: [{_id: data._id}]
-      })
+      api.remove();
     }
   });
 }
@@ -137,15 +171,22 @@ Router.all('/*', (req, res, next) => {
   if (reduce.hasOwnProperty(handle)) {
     reduce.params = params;
     reduce[handle](req, res).then(data => {
-      data.msg = 'success';
+      data = Object.assign({
+        ok: 1,
+        msg: 'success'
+      }, data);
       res.send(data)
     }).catch(err => {
-      if (err.ok !== undefined && err.msg !== undefined) {
-        res.send(err);
+      if (typeof err.msg === 'string') {
+        err = Object.assign({
+          ok: 0,
+          msg: language['errorMsg']
+        }, err);
       } else {
-        res.send({ok: 0, msg: language['errorMsg'], error: err.toString()});
+        err = {ok: 0, msg: language['errorMsg'], error: err.toString()};
         console.log('User Route Error:\n'.red.bold, err, '\n');
       }
+      res.send(err);
     })
   } else {
     next();
@@ -156,9 +197,9 @@ module.exports = Router;
 
 // 定时任务 每天04点0分0秒执行,清除验证码集合
 new CronJob('0 0 4 * * *', function () {
-  DB.connect({
-    collection: 'captcha',
-    ctrl: 'deleteMany',
-    ops: [{}]
-  });
+  api.params = {
+    collection: '_captcha',
+    reqData: {}
+  };
+  api.remove();
 }, null, true);

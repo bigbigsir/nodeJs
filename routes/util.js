@@ -8,8 +8,8 @@ const Fs = require('fs');
 const Express = require('express');
 const Pinyin = require('node-pinyin');
 const svgCaptcha = require('svg-captcha');
-const DB = require('../mongodb/connect');
 const languages = require('../language');
+const {api} = require('./api');
 
 const Router = Express();
 
@@ -48,16 +48,14 @@ const reduce = {
       fontSize: 40,
       ignoreChars: '0o1ilI'
     });
-    this.params.reqData = {
-      createTime: Date.now(),
-      uuid: this.params.reqData.uuid,
-      captcha: captcha.text.toLowerCase()
-    };
-    return DB.connect({
-      ctrl: 'insertOne',
+    api.params = {
       collection: '_captcha',
-      ops: [this.params.reqData]
-    }).then(() => captcha.data);
+      reqData: {
+        uuid: this.params.reqData.uuid,
+        captcha: captcha.text.toLowerCase()
+      }
+    };
+    return api.add().then(() => captcha.data);
   }
 };
 
@@ -71,16 +69,22 @@ Router.all('/*', (req, res, next) => {
     reduce.params = params;
     reduce[handle](req).then(data => {
       if (handle === 'getCaptcha') return res.type('svg').send(data);
-      data.ok = 1;
-      data.msg = 'success';
+      data = Object.assign({
+        ok: 1,
+        msg: 'success'
+      }, data);
       res.send(data)
     }).catch(err => {
-      if (err.ok !== undefined && err.msg !== undefined) {
-        res.send(err);
+      if (typeof err.msg === 'string') {
+        err = Object.assign({
+          ok: 0,
+          msg: language['errorMsg']
+        }, err);
       } else {
-        res.send({ok: 0, msg: language['errorMsg'], error: err.toString()});
-        console.log('Util Route Error:\n'.red.bold, err, "\n");
+        err = {ok: 0, msg: language['errorMsg'], error: err.toString()};
+        console.log('User Route Error:\n'.red.bold, err, '\n');
       }
+      res.send(err);
     });
   } else {
     next();

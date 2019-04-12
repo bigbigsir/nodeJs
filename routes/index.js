@@ -7,6 +7,7 @@
 require('colors');
 const Express = require('express');
 const Jwt = require('../common/token');
+const languages = require('../language');
 const Router = Express();
 
 // 处理请求参数
@@ -20,7 +21,7 @@ function formatReqParam(req) {
   }
   delete data._;
   req._requestParams = data;
-  req._language = req.headers.language || 'zh-CN';
+  req._language = req.headers['accept-language'] || 'zh-CN';
   console.log('Request Params:\n'.underline.green.bold, data, '\n')
 }
 
@@ -29,7 +30,7 @@ function setHeader(req, res) {
   let {origin, Origin, referer, Referer} = req.headers;
   let allowOrigin = origin || Origin || referer || Referer || '*';
   res.header("Access-Control-Allow-Origin", allowOrigin);
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Language");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   res.header("Access-Control-Allow-Credentials", true); // 是否可以带cookies
   res.header("X-Powered-By", 'Express');
@@ -43,12 +44,13 @@ function authorization(req, res, next) {
   if (/^\/(util|user)/.test(req.baseUrl)) {
     next();
   } else {
+    let language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
     token = req.cookies.token || req.headers.authorization;
     Jwt.verifyToken(token).then(() => next(), () => {
       res.status(401).send({
         ok: 0,
         code: 401,
-        msg: '授权无效或已过期，请重新登录'
+        msg: language['tokenInvalid']
       })
     });
   }
