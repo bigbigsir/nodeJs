@@ -4,7 +4,6 @@
  */
 
 const Config = {
-  host: '127.0.0.1',
   port: 3000,
   sessionOps: {
     name: 'express-session',

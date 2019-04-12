@@ -1,9 +1,11 @@
+require('colors');
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
+const interfaces = require('os').networkInterfaces(); // 在开发环境中获取局域网中的本机iP地址
 
 const config = require('./config');
 const index = require('./routes/index');
@@ -47,11 +49,19 @@ app.use(function (err, req, res) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-const server = app.listen(config.port, config.host, function () {
-  const host = server.address().address;
+// 修改端口号后需要使用 node app启动服务
+const server = app.listen(config.port, function () {
+  let IPAddress = '';
   const port = server.address().port;
-  console.log('\033[42;30mserver address:\033[0m http://' + host + ':' + port);
+  for (let devName in interfaces) {
+    interfaces[devName].forEach(alias => {
+      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+        IPAddress = alias.address;
+      }
+    });
+  }
+  console.log('\nserver address: ' + `http://localhost:${port}`.underline.green.bold);
+  console.log('\nserver address: ' + `http://${IPAddress}:${port}`.underline.green.bold);
 });
 
 module.exports = app;

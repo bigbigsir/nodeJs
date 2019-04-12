@@ -57,6 +57,7 @@ function authorization(req, res, next) {
 }
 
 Router.all('/*', (req, res, next) => {
+  console.log(req.ip);
   setHeader(req, res);
   authorization(req, res, next);
 });
