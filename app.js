@@ -49,6 +49,7 @@ app.use(function (err, req, res) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 // 修改端口号后需要使用命令:node app启动服务
 const server = app.listen(config.port, function () {
   let IPAddress = '';
