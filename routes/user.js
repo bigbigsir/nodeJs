@@ -20,18 +20,15 @@ let language;
 const reduce = {
   // 登录
   signIn() {
-    let {reqData: query} = this.params;
+    let {reqParam: query} = this.params;
     let password = query.password;
     delete query.password;
     return verifyCaptcha(query).then(() => {
       delete query.uuid;
       delete query.captcha;
       api.params = this.params;
-      return api.findOne(null, 1);
+      return api.findOne(true);
     }).then(({data}) => {
-      console.log(data);
-      console.log(data.password);
-      console.log(generateHmac(decrypt(password)));
       if (data && data.password === generateHmac(decrypt(password))) {
         let token = Jwt.generateToken(data.id);
         return {token}
@@ -42,7 +39,7 @@ const reduce = {
   },
   // 注册
   signUp() {
-    let {reqData: doc} = this.params;
+    let {reqParam: doc} = this.params;
     return verifyCaptcha(doc).then(() => {
       delete doc.uuid;
       delete doc.captcha;
@@ -58,7 +55,7 @@ const reduce = {
   },
   // 修改密码
   changePassword() {
-    let {reqData: query, collection} = this.params;
+    let {reqParam: query, collection} = this.params;
     let password = query.password;
     let originalPassword = query.originalPassword;
     delete query.password;
@@ -66,27 +63,27 @@ const reduce = {
     if (password && originalPassword) {
       api.params = {
         collection,
-        reqData: {
+        reqParam: {
           password: generateHmac(decrypt(originalPassword))
         }
       };
       if (query.id) {
         // 如果有id，这使用id匹配数据
-        Object.assign(api.params.reqData, {id: query.id});
+        Object.assign(api.params.reqParam, {id: query.id});
       } else {
         // 如果没有id，这使用所有请求参数匹配
-        Object.assign(api.params.reqData, query);
+        Object.assign(api.params.reqParam, query);
       }
       return api.findOne().then(({data}) => {
         if (data) {
           api.params = {
             collection,
-            reqData: {
+            reqParam: {
               ...query,
               password: generateHmac(decrypt(password)),
             }
           };
-          return api.updateOne(null, null, [])
+          return api.updateOne(null, [])
         } else {
           return Promise.reject({msg: language['wrongPassword']})
         }
@@ -97,23 +94,22 @@ const reduce = {
   },
   // 获取当前登录用户信息
   getUserInfo(req) {
-    let ctrl = 'findOne';
     let {collection} = this.params;
-    let options = {projection: {_id: 0, password: 0}};
     let token = req.cookies.token || req.headers.authorization;
     return Jwt.verifyToken(token).then(({data}) => {
       api.params = {
         collection,
-        reqData: {id: data}
+        reqParam: {id: data}
       };
       return api.findOne();
-    }, () => {
+    }).then((data) => {
+      if (data.data) return data;
+      else return Promise.reject()
+    }).catch(() => {
       return Promise.reject({
         code: 401,
         msg: language['tokenInvalid']
       })
-    }).then(data => {
-      return {data}
     })
   }
 };
@@ -125,7 +121,7 @@ function verifyCaptcha(param) {
   if (!uuid && !captcha) return Promise.resolve(null);
   api.params = {
     collection: '_captcha',
-    reqData: {uuid, captcha}
+    reqParam: {uuid, captcha}
   };
   return api.findOne().then(({data}) => {
     if (!data) {
@@ -162,11 +158,11 @@ function generateHmac(str) {
 }
 
 Router.all('/*', (req, res, next) => {
-  let reqData = req._requestParams;
+  let reqParam = req._requestParam;
   let path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/');
   let handle = path.pop();
   let collection = 'user';
-  let params = {reqData, collection};
+  let params = {reqParam, collection};
   language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
   if (reduce.hasOwnProperty(handle)) {
     reduce.params = params;
@@ -199,7 +195,7 @@ module.exports = Router;
 new CronJob('0 0 4 * * *', function () {
   api.params = {
     collection: '_captcha',
-    reqData: {}
+    reqParam: {}
   };
-  api.remove();
+  api.remove(true);
 }, null, true);

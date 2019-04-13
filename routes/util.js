@@ -18,9 +18,9 @@ let language;
 const reduce = {
   // 获取中文拼音
   getPinYin(req, style = 'normal') {
-    let {reqData} = options;
-    if (typeof reqData.text === 'string') {
-      let data = Pinyin(reqData.text, {style});
+    let {reqParam} = options;
+    if (typeof reqParam.text === 'string') {
+      let data = Pinyin(reqParam.text, {style});
       data = Array.prototype.concat.apply([], data);
       return Promise.resolve({data})
     } else {
@@ -40,7 +40,7 @@ const reduce = {
   getCaptcha() {
     // create 生成随机验证码
     // createMathExpr 生成数学公式
-    if (!this.params.reqData.uuid) return Promise.reject('uuid cannot be null');
+    if (!this.params.reqParam.uuid) return Promise.reject('uuid cannot be null');
     let captcha = svgCaptcha.createMathExpr({
       noise: 2,
       width: 120,
@@ -50,8 +50,8 @@ const reduce = {
     });
     api.params = {
       collection: '_captcha',
-      reqData: {
-        uuid: this.params.reqData.uuid,
+      reqParam: {
+        uuid: this.params.reqParam.uuid,
         captcha: captcha.text.toLowerCase()
       }
     };
@@ -60,10 +60,10 @@ const reduce = {
 };
 
 Router.all('/*', (req, res, next) => {
-  let reqData = req._requestParams;
+  let reqParam = req._requestParam;
   let path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/');
   let handle = path.pop();
-  let params = {reqData, path};
+  let params = {reqParam, path};
   language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
   if (reduce.hasOwnProperty(handle)) {
     reduce.params = params;

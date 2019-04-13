@@ -12,12 +12,12 @@ const ObjectID = MongoDB.ObjectID;
 const MongoClient = MongoDB.MongoClient;
 
 function connect(params) {
-  let {collection, ctrl, ops} = params;
-  console.log('\n MongoDB Params:\n'.green.bold, JSON.stringify(params), "\n");
+  let {collection, ctrl, dbOptions} = params;
+  console.log('\nMongoDB Params:\n'.green.bold, JSON.stringify(params), "\n");
   return MongoClient.connect(Config.dbUrl, Config.dbOptions).then(client => {
     const DB = client.db(Config.dbName);
     const Collection = DB.collection(collection);
-    let result = Collection[ctrl](...ops);
+    let result = Collection[ctrl](...dbOptions);
     if (ctrl === "find" || ctrl === "aggregate") result = result.toArray();
     client.close(false).catch((err) => {
       console.log('MongoDB Client Close Error:\n'.red.bold, err, "\n");

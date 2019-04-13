@@ -49,7 +49,7 @@ app.use(function (err, req, res) {
   res.status(err.status || 500);
   res.render('error');
 });
-// 修改端口号后需要使用 node app启动服务
+// 修改端口号后需要使用命令:node app启动服务
 const server = app.listen(config.port, function () {
   let IPAddress = '';
   const port = server.address().port;
@@ -60,8 +60,9 @@ const server = app.listen(config.port, function () {
       }
     });
   }
-  console.log('\nserver address: ' + `http://localhost:${port}`.underline.green.bold);
-  console.log('\nserver address: ' + `http://${IPAddress}:${port}`.underline.green.bold);
+  console.log(' App running at: ');
+  console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold);
+  console.log(' - Network:  ' + `http://${IPAddress}:${port}`.underline.green.bold);
 });
 
 module.exports = app;

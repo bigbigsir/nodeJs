@@ -19,14 +19,14 @@ const reduce = {
   // 新增单个或多个数据到集合中
   add() {
     let ctrl = 'insertMany';
-    let {reqData, collection} = this.params;
-    let isArray = Array.isArray(reqData);
-    let docs = isArray ? reqData : [reqData];
+    let {reqParam, collection} = this.params;
+    let isArray = Array.isArray(reqParam);
+    let docs = isArray ? reqParam : [reqParam];
     docs.forEach((item) => {
       item.id = item._id = DB.ObjectID().toString();
       item.createDate = +new Date();
     });
-    let params = {collection, ctrl, ops: [docs]};
+    let params = {collection, ctrl, dbOptions: [docs]};
     return DB.connect(params).then(data => {
       return {
         ...data.result,
@@ -38,20 +38,20 @@ const reduce = {
   // 查询条件匹配的树形数据，如果没有指定条件就查询parentId为null的树形数据
   tree() {
     let ctrl = 'find';
-    let {reqData, collection} = this.params;
+    let {reqParam, collection} = this.params;
     let options = {
       sort: {sort: 1},
       projection: {_id: 0, password: 0}
     };
-    let query = Object.keys(reqData).length ? reqData : {parentId: null};
+    let query = Object.keys(reqParam).length ? reqParam : {parentId: null};
     let neQuery = Object.assign({}, query);
     for (let key in neQuery) {
       if (neQuery.hasOwnProperty(key)) {
         neQuery[key] = {$ne: neQuery[key]};
       }
     }
-    let getRootPas = {collection, ctrl, ops: [query, options]};
-    let getChildPas = {collection, ctrl, ops: [neQuery, options]};
+    let getRootPas = {collection, ctrl, dbOptions: [query, options]};
+    let getChildPas = {collection, ctrl, dbOptions: [neQuery, options]};
     let getRoot = DB.connect(getRootPas);
     let getChild = DB.connect(getChildPas);
     return Promise.all([getRoot, getChild]).then(([roots, nodes]) => {
@@ -77,7 +77,7 @@ const reduce = {
   // 如果某个查询条件为数组，数组中的某一项值匹配，就会返回该数据；
   find() {
     let ctrl = 'find';
-    let {reqData: query, collection} = this.params;
+    let {reqParam: query, collection} = this.params;
     let options = {
       sort: {createDate: 1},
       projection: {_id: 0, password: 0}
@@ -95,18 +95,19 @@ const reduce = {
         }
       }
     }
-    let params = {collection, ctrl, ops: [query, options]};
+    let params = {collection, ctrl, dbOptions: [query, options]};
     return DB.connect(params).then(data => ({data}));
   },
 
   // 查找与指定条件匹配的第一条数据（单条查询）
-  findOne(req, isNeedPassword = 0) {
+  findOne(isNeedPassword = false) {
     let ctrl = 'findOne';
-    let {reqData: query, collection} = this.params;
+    let {reqParam: query, collection} = this.params;
     let options = {
-      projection: {_id: 0, password: isNeedPassword}
+      projection: {_id: 0, password: 0}
     };
-    let params = {collection, ctrl, ops: [query, options]};
+    if (isNeedPassword) delete options.projection.password;
+    let params = {collection, ctrl, dbOptions: [query, options]};
     return DB.connect(params).then(data => ({data}));
   },
 
@@ -114,7 +115,7 @@ const reduce = {
   findPage() {
     let getDataCtrl = 'find';
     let getTotalCtrl = 'countDocuments';
-    let {reqData: query, collection} = this.params;
+    let {reqParam: query, collection} = this.params;
     let {page, rows, pageSize, exact} = query;
     let options = {
       sort: {createDate: 1},
@@ -137,8 +138,8 @@ const reduce = {
         }
       }
     }
-    let getDataPas = {collection, ctrl: getDataCtrl, ops: [query, options]};
-    let getTotalPas = {collection, ctrl: getTotalCtrl, ops: [query]};
+    let getDataPas = {collection, ctrl: getDataCtrl, dbOptions: [query, options]};
+    let getTotalPas = {collection, ctrl: getTotalCtrl, dbOptions: [query]};
     let getData = DB.connect(getDataPas);
     let getTotal = DB.connect(getTotalPas);
     return Promise.all([getData, getTotal]).then(data => {
@@ -155,15 +156,15 @@ const reduce = {
   },
 
   // 修改id匹配的单条数据；
-  updateOne(req, update = null, banUpdateFields = ['password']) {
+  updateOne(update = null, banUpdateFields = ['password']) {
     let ctrl = 'updateOne';
-    let {reqData, collection} = this.params;
-    let filter = {id: reqData.id};
-    banUpdateFields.forEach(field => delete reqData[field]);
-    update = update ? update : {$set: reqData};
-    let params = {collection, ctrl, ops: [filter, update]};
+    let {reqParam, collection} = this.params;
+    let filter = {id: reqParam.id};
+    banUpdateFields.forEach(field => delete reqParam[field]);
+    update = update ? update : {$set: reqParam};
+    let params = {collection, ctrl, dbOptions: [filter, update]};
     if (filter.id) {
-      return DB.connect(params)
+      return DB.connect(params).then(data => ({...data.result}))
     } else {
       return Promise.reject('id arguments cannot be null');
     }
@@ -172,31 +173,31 @@ const reduce = {
   // 修改update属性匹配的多条数据
   updateMany() {
     let ctrl = 'updateMany';
-    let {reqData, collection} = this.params;
-    let filter = reqData.filter;
-    let update = reqData.update;
+    let {reqParam, collection} = this.params;
+    let filter = reqParam.filter;
+    let update = reqParam.update;
     delete update.id;
     delete update._id;
     delete update.password;
     if (_util.isObject(filter) && _util.isObject(update)) {
       update = {$set: update};
-      let params = {collection, ctrl, ops: [filter, update]};
-      return DB.connect(params);
+      let params = {collection, ctrl, dbOptions: [filter, update]};
+      return DB.connect(params).then(data => ({...data.result}));
     } else {
       return Promise.reject('filter or update attribute is not object');
     }
   },
 
   // 删除与指定条件匹配的多条数据，禁止了无参数删除，否则会删除整个collection
-  remove(req, allowAll = false) {
+  remove(allowAll = false) {
     let ctrl = 'deleteMany';
-    let {reqData: filter, collection} = this.params;
+    let {reqParam: filter, collection} = this.params;
     for (let key in filter) {
       if (filter.hasOwnProperty(key) && Array.isArray(filter[key])) {
         filter[key] = {$in: filter[key]}
       }
     }
-    let params = {collection, ctrl, ops: [filter]};
+    let params = {collection, ctrl, dbOptions: [filter]};
     if (Object.keys(filter).length || allowAll) {
       return DB.connect(params).then(data => ({...data.result}));
     } else {
@@ -254,9 +255,9 @@ const reduce = {
           // 是否有其他参数,有就把文件数组作为一个字段保存，否则就作为文件主体保存
           if (Object.keys(fields).length) {
             fields.files = fileList;
-            this.params.reqData = fields;
+            this.params.reqParam = fields;
           } else {
-            this.params.reqData = fileList;
+            this.params.reqParam = fileList;
           }
           this.add().then(data => {
             resolve({
@@ -274,7 +275,8 @@ const reduce = {
   // 查找id匹配的数据
   // 使用文件路径删除文件，并删除该条数据
   removeFile() {
-    if (this.params.reqData.id) {
+    let {reqParam, collection} = this.params;
+    if (reqParam.id || reqParam.url) {
       let removeTotal = 0;
       return this.find().then(({data}) => {
         // 如果数据是文件数据，就依据path字段删除，如不是则依据files字段中的path删除
@@ -293,24 +295,25 @@ const reduce = {
             })
           }
         });
+        this.params = {reqParam, collection};
         return this.remove();
       }).then(data => {
         data.removeTotal = removeTotal;
         return data
       });
     } else {
-      return Promise.reject('id cannot be null');
+      return Promise.reject('id or url cannot be null');
     }
   },
 
   // 查找id匹配的数据，使用localField字段中的值在被关联集合中匹配foreignField的值
   joinQuery() {
     let ctrl = 'aggregate';
-    let {reqData, collection, fromCollection} = this.params;
+    let {reqParam, collection, fromCollection} = this.params;
     let localField = `${collection}_${fromCollection}`;
     let pipeline = [
       {
-        $match: reqData,
+        $match: reqParam,
       }, {
         $sort: {createDate: 1}
       }, {
@@ -324,9 +327,9 @@ const reduce = {
         },
       },
     ];
-    let params = {collection, ctrl, ops: [pipeline]};
+    let params = {collection, ctrl, dbOptions: [pipeline]};
 
-    if (fromCollection && reqData.id) {
+    if (fromCollection && reqParam.id) {
       return DB.connect(params).then(data => {
         return {
           data: data[0] || null
@@ -340,19 +343,19 @@ const reduce = {
   // 查找id匹配的数据，将joinId参数中的id，保存到该数据${collection}_${fromCollection}字段中，达到关联的效果
   // collection指当前要操作的集合名字，fromCollection指被关联的集合名字
   createJoin() {
-    let {reqData, collection, fromCollection} = this.params;
+    let {reqParam, collection, fromCollection} = this.params;
     let localField = `${collection}_${fromCollection}`;
     let update = {
       $addToSet: {
         [localField]: {
-          $each: Array.isArray(reqData['joinId'])
-            ? reqData['joinId']
-            : [reqData['joinId']]
+          $each: Array.isArray(reqParam['joinId'])
+            ? reqParam['joinId']
+            : [reqParam['joinId']]
         }
       }
     };
-    if (fromCollection && reqData['joinId']) {
-      return this.updateOne(null, update);
+    if (fromCollection && reqParam['joinId']) {
+      return this.updateOne(update);
     } else {
       return Promise.reject('fromCollection or joinId cannot be null');
     }
@@ -361,15 +364,15 @@ const reduce = {
   // 查找id匹配的数据，该数据中${collection}_${fromCollection}字段中与joinId参数中id匹配的值删除，达到取消关联的效果
   // collection指当前要操作的集合名字，fromCollection指被关联的集合名字
   removeJoin() {
-    let {reqData, collection, fromCollection} = this.params;
+    let {reqParam, collection, fromCollection} = this.params;
     let localField = `${collection}_${fromCollection}`;
     let update = {
       $pullAll: {
-        [localField]: reqData['joinId']
+        [localField]: reqParam['joinId']
       }
     };
-    if (fromCollection && reqData['joinId']) {
-      return this.updateOne(null, update);
+    if (fromCollection && reqParam['joinId']) {
+      return this.updateOne(update);
     } else {
       return Promise.reject('fromCollection or joinId cannot be null');
     }
@@ -377,14 +380,15 @@ const reduce = {
 };
 
 Router.all('/*', (req, res, next) => {
-  let reqData = req._requestParams;
+  let reqParam = req._requestParam;
   let path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/');
   let handle = path.pop();
   let collection = path.shift();
   let fromCollection = path.shift();
-  let params = {reqData, collection, fromCollection};
+  let params = {reqParam, collection, fromCollection};
   language = languages[req._language] ? languages[req._language] : languages['zh-CN'];
   if (collection && reduce.hasOwnProperty(handle)) {
+    if (handle !== 'upload') req = undefined;
     reduce.params = params;
     reduce[handle](req).then(data => {
       data = Object.assign({

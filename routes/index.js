@@ -20,7 +20,7 @@ function formatReqParam(req) {
     data = Object.assign({}, query, body);
   }
   delete data._;
-  req._requestParams = data;
+  req._requestParam = data;
   req._language = req.headers['accept-language'] || 'zh-CN';
   console.log('Request Params:\n'.underline.green.bold, data, '\n')
 }
@@ -57,7 +57,6 @@ function authorization(req, res, next) {
 }
 
 Router.all('/*', (req, res, next) => {
-  console.log(req.ip);
   setHeader(req, res);
   authorization(req, res, next);
 });
