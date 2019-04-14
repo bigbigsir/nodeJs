@@ -5,6 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
+const compression = require('compression');
 const interfaces = require('os').networkInterfaces(); // 在开发环境中获取局域网中的本机iP地址
 
 const config = require('./config');
@@ -15,6 +16,7 @@ const user = require('./routes/user');
 
 const app = express();
 
+app.use(compression());
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
