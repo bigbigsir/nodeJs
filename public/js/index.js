@@ -65,12 +65,12 @@
 //   var key = data.key;
 //   var crypt = new JSEncrypt();
 //   crypt.setPublicKey(key);
-//   var pwd = 'admin'; //需要加密的账号密码
+//   var pwd = 'admin1'; //需要加密的账号密码
 //   var encryptKey = crypt.encrypt(pwd); //使用公钥加密，得到密文
 //   $.ajax({
 //     url: '/user/signIn',
 //     type: "post",
-//     data: {code: 'admin', password: 'admin'},// encryptKey
+//     data: {username: 'admin1', password: encryptKey},// encryptKey
 //     success: function (data) {
 //       $.cookie('token', data.token, {expires: 7});
 //       console.log(data);
@@ -96,9 +96,8 @@ $.get('/util/getPublicKey', function (data) {
     type: "post",
     contentType: 'application/json',
     data: JSON.stringify({
-      userName: 'admin1',
-      code: 'admin',
-      // password: 'admin'
+      username: 'admin1',
+      password: crypt.encrypt('admin1')
     }),
     success: function (data) {
       console.log(data);
@@ -242,15 +241,15 @@ var jsonData = JSON.stringify(data);
 // });
 
 // 删除文件
-$.ajax({
-  url: '/api/file/removeFile',
-  type: "DELETE",
-  contentType: 'application/json',
-  data: JSON.stringify({
-    id: ['5cad8634e403700e9cda0ba6', '5cad8634e403700e9cda0ba7', '5cad8634e403700e9cda0ba8']
-  }),
-  success: function (data) {
-    console.log(data);
-  }
-});
+// $.ajax({
+//   url: '/api/file/removeFile',
+//   type: "DELETE",
+//   contentType: 'application/json',
+//   data: JSON.stringify({
+//     id: ['5cad8634e403700e9cda0ba6', '5cad8634e403700e9cda0ba7', '5cad8634e403700e9cda0ba8']
+//   }),
+//   success: function (data) {
+//     console.log(data);
+//   }
+// });
 
