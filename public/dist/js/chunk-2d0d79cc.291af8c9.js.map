@@ -1,1 +1,0 @@
-{"version":3,"sources":["webpack:///./src/element-ui/fonts/element-icons.woff"],"names":["module","exports","__webpack_require__","p"],"mappings":"qGAAAA,EAAAC,QAAiBC,EAAAC,EAAuB","file":"js/chunk-2d0d79cc.291af8c9.js","sourcesContent":["module.exports = __webpack_public_path__ + \"fonts/element-icons.2fad952a.woff\";"],"sourceRoot":""}
