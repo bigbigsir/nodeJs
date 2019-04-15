@@ -9,7 +9,7 @@ const Fs = require('fs');
 const Express = require('express');
 const Multiparty = require('multiparty');
 const DB = require('../mongodb/connect');
-const _util = require('../common/util');
+const isPlainObject = require('lodash/isPlainObject');
 const languages = require('../language');
 const Router = Express();
 
@@ -179,7 +179,7 @@ const reduce = {
     delete update.id;
     delete update._id;
     delete update.password;
-    if (_util.isObject(filter) && _util.isObject(update)) {
+    if (isPlainObject(filter) && isPlainObject(update)) {
       update = {$set: update};
       let params = {collection, ctrl, dbOptions: [filter, update]};
       return DB.connect(params).then(data => ({...data.result}));
