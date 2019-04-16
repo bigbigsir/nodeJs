@@ -43,9 +43,13 @@ const reduce = {
     return verifyCaptcha(doc).then(() => {
       delete doc.uuid;
       delete doc.captcha;
-      doc.password = generateHmac(decrypt(doc.password));
-      api.params = this.params;
-      return api.add();
+      if (doc.password) {
+        doc.password = generateHmac(decrypt(doc.password));
+        api.params = this.params;
+        return api.add();
+      } else {
+        return Promise.reject('Passwords are a must');
+      }
     });
   },
   // 登出
@@ -68,7 +72,7 @@ const reduce = {
         }
       };
       if (query.id) {
-        // 如果有id，这使用id匹配数据
+        // 如果有id，则使用id匹配数据
         Object.assign(api.params.reqParam, {id: query.id});
       } else {
         // 如果没有id，这使用所有请求参数匹配
