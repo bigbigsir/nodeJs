@@ -7,6 +7,8 @@ const logger = require('morgan');
 const session = require('express-session');
 const compression = require('compression');
 const interfaces = require('os').networkInterfaces(); // 在开发环境中获取局域网中的本机iP地址
+const cp = require('child_process')
+const history = require('connect-history-api-fallback')
 
 const config = require('./config');
 const index = require('./routes/index');
@@ -15,7 +17,7 @@ const util = require('./routes/util');
 const user = require('./routes/user');
 
 const app = express();
-
+app.use('/', history());
 app.use(compression());
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -66,6 +68,7 @@ const server = app.listen(config.port, function () {
   console.log(' App running at: ');
   console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold);
   console.log(' - Network:  ' + `http://${IPAddress}:${port}`.underline.green.bold);
+  // cp.exec(`open http://${IPAddress}:${port}`)
 });
 
 module.exports = app;
