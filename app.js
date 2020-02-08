@@ -18,7 +18,21 @@ const user = require('./routes/user')
 
 const app = express()
 app.use('/', history({
-  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
+  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
+  rewrites: [
+    {
+      from: /^\/admin/,
+      to: function (context) {
+        return '/admin/index.html'
+      }
+    },
+    {
+      from: /^\/h5/,
+      to: function (context) {
+        return '/h5/index.html'
+      }
+    }
+  ]
 }))
 app.use(compression())
 // view engine setup
