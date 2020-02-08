@@ -1,4 +1,5 @@
 require('colors')
+const fs = require('fs')
 const createError = require('http-errors')
 const express = require('express')
 const path = require('path')
@@ -9,6 +10,14 @@ const compression = require('compression')
 const interfaces = require('os').networkInterfaces() // 在开发环境中获取局域网中的本机iP地址
 const cp = require('child_process')
 const history = require('connect-history-api-fallback')
+const https = require('https')
+const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
+const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
+
+const options = {
+  key: privateKey,
+  cert: certificate
+}
 
 const config = require('./config')
 const index = require('./routes/index')
@@ -71,7 +80,7 @@ app.use(function (err, req, res) {
 })
 
 // 修改端口号后需要使用命令:node app启动服务
-const server = app.listen(config.port, function () {
+const server = https.createServer(options, app).listen(config.port, function () {
   let iPAddress = ''
   const port = server.address().port
   for (const devName in interfaces) {
