@@ -1,20 +1,22 @@
 require('colors')
 const fs = require('fs')
-const createError = require('http-errors')
-const express = require('express')
 const path = require('path')
-const cookieParser = require('cookie-parser')
+const net = require('net')
+const http = require('http')
+const https = require('https')
 const logger = require('morgan')
+const express = require('express')
+const cp = require('child_process')
+const createError = require('http-errors')
+const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const compression = require('compression')
 const interfaces = require('os').networkInterfaces() // 在开发环境中获取局域网中的本机iP地址
-const cp = require('child_process')
 const history = require('connect-history-api-fallback')
-const https = require('https')
+
 const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
 const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
-
-const options = {
+const credentials = {
   key: privateKey,
   cert: certificate
 }
@@ -31,15 +33,11 @@ app.use('/', history({
   rewrites: [
     {
       from: /^\/admin/,
-      to: function (context) {
-        return '/admin/index.html'
-      }
+      to: '/admin/index.html'
     },
     {
       from: /^\/h5/,
-      to: function (context) {
-        return '/h5/index.html'
-      }
+      to: '/h5/index.html'
     }
   ]
 }))
@@ -78,11 +76,30 @@ app.use(function (err, req, res) {
   res.status(err.status || 500)
   res.render('error')
 })
-
-// 修改端口号后需要使用命令:node app启动服务
-const server = https.createServer(options, app).listen(config.port, function () {
+// 监听https http 端口
+http.createServer(app).listen(config.port + 1)
+https.createServer(credentials, app).listen(config.port + 2)
+// 创建服务器
+net.createServer(function (socket) {
+  socket.once('data', function (buf) {
+    // buf 返回格式数组，如果https访问，buf[0]为十六进制
+    // https数据流的第一位是十六进制 “16” ，转换成十进制就是22
+    const address = buf[0] === 22 ? config.port + 2 : config.port + 1
+    // 创建指向https或http服务器的链接
+    const proxy = net.createConnection(address, function () {
+      proxy.write(buf)
+      // 反向代理的过程，tcp接受的数据交给代理链接，代理链接服务器端返回数据交由socket返回给客户端
+      socket.pipe(proxy).pipe(socket)
+    })
+    proxy.on('error', function (err) {
+      console.log(err)
+    })
+  })
+  socket.on('error', function (err) {
+    console.log(err)
+  })
+}, app).listen(config.port, () => {
   let iPAddress = ''
-  const port = server.address().port
   for (const devName in interfaces) {
     interfaces[devName].forEach(alias => {
       if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
@@ -91,9 +108,25 @@ const server = https.createServer(options, app).listen(config.port, function () 
     })
   }
   console.log(' App running at: ')
-  console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold)
-  console.log(' - Network:  ' + `http://${iPAddress}:${port}`.underline.green.bold)
+  console.log(' - Local:    ' + `http://localhost:${3000}`.underline.green.bold)
+  console.log(' - Network:  ' + `http://${iPAddress}:${3000}`.underline.green.bold)
   // cp.exec(`open http://${IPAddress}:${port}`)
 })
+// 修改端口号后需要使用命令:node app启动服务
+// const server = app.listen(config.port, function () {
+//   let iPAddress = ''
+//   const port = server.address().port
+//   for (const devName in interfaces) {
+//     interfaces[devName].forEach(alias => {
+//       if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+//         iPAddress = alias.address
+//       }
+//     })
+//   }
+//   console.log(' App running at: ')
+//   console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold)
+//   console.log(' - Network:  ' + `http://${iPAddress}:${port}`.underline.green.bold)
+//   // cp.exec(`open http://${IPAddress}:${port}`)
+// })
 
 module.exports = app
