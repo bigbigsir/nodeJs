@@ -14,18 +14,20 @@ const compression = require('compression')
 const interfaces = require('os').networkInterfaces() // 在开发环境中获取局域网中的本机iP地址
 const history = require('connect-history-api-fallback')
 
+const config = require('./config')
+const index = require('./routes/index')
+const { router: api } = require('./routes/api')
+const util = require('./routes/util')
+const user = require('./routes/user')
+
+const httpPort = config.port + 1
+const httpsPort = config.port + 2
 const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
 const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
 const credentials = {
   key: privateKey,
   cert: certificate
 }
-
-const config = require('./config')
-const index = require('./routes/index')
-const { router: api } = require('./routes/api')
-const util = require('./routes/util')
-const user = require('./routes/user')
 
 const app = express()
 app.use('/', history({
@@ -76,26 +78,28 @@ app.use(function (err, req, res) {
   res.status(err.status || 500)
   res.render('error')
 })
+
 // 监听https http 端口
-http.createServer(app).listen(config.port + 1)
-https.createServer(credentials, app).listen(config.port + 2)
+http.createServer(app).listen(httpPort)
+https.createServer(credentials, app).listen(httpsPort)
+
 // 创建服务器
-net.createServer(function (socket) {
-  socket.once('data', function (buf) {
+net.createServer((socket) => {
+  socket.once('data', (buf) => {
     // buf 返回格式数组，如果https访问，buf[0]为十六进制
     // https数据流的第一位是十六进制 “16” ，转换成十进制就是22
-    const address = buf[0] === 22 ? config.port + 2 : config.port + 1
+    const address = buf[0] === 22 ? httpsPort : httpPort
     // 创建指向https或http服务器的链接
-    const proxy = net.createConnection(address, function () {
+    const proxy = net.createConnection(address, () => {
       proxy.write(buf)
       // 反向代理的过程，tcp接受的数据交给代理链接，代理链接服务器端返回数据交由socket返回给客户端
       socket.pipe(proxy).pipe(socket)
     })
-    proxy.on('error', function (err) {
+    proxy.on('error', (err) => {
       console.log(err)
     })
   })
-  socket.on('error', function (err) {
+  socket.on('error', (err) => {
     console.log(err)
   })
 }, app).listen(config.port, () => {
@@ -112,8 +116,9 @@ net.createServer(function (socket) {
   console.log(' - Network:  ' + `http://${iPAddress}:${3000}`.underline.green.bold)
   // cp.exec(`open http://${IPAddress}:${port}`)
 })
+
 // 修改端口号后需要使用命令:node app启动服务
-// const server = app.listen(config.port, function () {
+// const server = app.listen(config.port, ()=> {
 //   let iPAddress = ''
 //   const port = server.address().port
 //   for (const devName in interfaces) {
