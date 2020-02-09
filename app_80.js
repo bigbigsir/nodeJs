@@ -20,8 +20,8 @@ const { router: api } = require('./routes/api')
 const util = require('./routes/util')
 const user = require('./routes/user')
 
-const httpPort = 81
-const httpsPort = 82
+const httpPort = 7001
+const httpsPort = 443
 const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
 const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
 const credentials = {
