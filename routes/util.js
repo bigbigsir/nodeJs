@@ -33,6 +33,8 @@ const reduce = {
   },
   // 获取公钥
   getPublicKey() {
+    const a = '[{name:123}]'
+    console.log(JSON.parse(a))
     const key = Fs.readFileSync('./pem/rsa_public_key.pem').toString()
     return Promise.resolve({ key })
   },
