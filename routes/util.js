@@ -59,10 +59,6 @@ const reduce = {
   }
 }
 
-setTimeout(() => {
-  console.log(a)
-},10000)
-
 Router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
   const path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/')
