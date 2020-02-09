@@ -30,7 +30,7 @@ function setHeader(req, res) {
   const { origin, Origin, referer, Referer } = req.headers
   const allowOrigin = origin || Origin || referer || Referer || '*'
   res.header('Access-Control-Allow-Origin', allowOrigin)
-  res.header('Access-Control-Allow-Headers', '*')
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,*')
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Credentials', true) // 是否可以带cookies
   res.header('X-Powered-By', 'Express')

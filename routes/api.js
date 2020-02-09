@@ -26,7 +26,11 @@ const reduce = {
       item.id = item._id = DB.ObjectID().toString()
       item.createDate = +new Date()
     })
-    const params = { collection, ctrl, dbOptions: [docs] }
+    const params = {
+      collection,
+      ctrl,
+      dbOptions: [docs]
+    }
     return DB.connect(params).then(data => {
       return {
         ...data.result,
@@ -41,7 +45,10 @@ const reduce = {
     const { reqParam, collection } = this.params
     const options = {
       sort: { sort: 1 },
-      projection: { _id: 0, password: 0 }
+      projection: {
+        _id: 0,
+        password: 0
+      }
     }
     const query = Object.keys(reqParam).length ? reqParam : { parentId: null }
     const neQuery = Object.assign({}, query)
@@ -50,8 +57,16 @@ const reduce = {
         neQuery[key] = { $ne: neQuery[key] }
       }
     }
-    const getRootPas = { collection, ctrl, dbOptions: [query, options] }
-    const getChildPas = { collection, ctrl, dbOptions: [neQuery, options] }
+    const getRootPas = {
+      collection,
+      ctrl,
+      dbOptions: [query, options]
+    }
+    const getChildPas = {
+      collection,
+      ctrl,
+      dbOptions: [neQuery, options]
+    }
     const getRoot = DB.connect(getRootPas)
     const getChild = DB.connect(getChildPas)
     return Promise.all([getRoot, getChild]).then(([roots, nodes]) => {
@@ -80,7 +95,10 @@ const reduce = {
     const { reqParam: query, collection } = this.params
     const options = {
       sort: { createDate: 1 },
-      projection: { _id: 0, password: 0 }
+      projection: {
+        _id: 0,
+        password: 0
+      }
     }
     if (query.exact) {
       delete query.exact
@@ -95,7 +113,11 @@ const reduce = {
         }
       }
     }
-    const params = { collection, ctrl, dbOptions: [query, options] }
+    const params = {
+      collection,
+      ctrl,
+      dbOptions: [query, options]
+    }
     return DB.connect(params).then(data => ({ data }))
   },
 
@@ -104,10 +126,17 @@ const reduce = {
     const ctrl = 'findOne'
     const { reqParam: query, collection } = this.params
     const options = {
-      projection: { _id: 0, password: 0 }
+      projection: {
+        _id: 0,
+        password: 0
+      }
     }
     if (isNeedPassword) delete options.projection.password
-    const params = { collection, ctrl, dbOptions: [query, options] }
+    const params = {
+      collection,
+      ctrl,
+      dbOptions: [query, options]
+    }
     return DB.connect(params).then(data => ({ data }))
   },
 
@@ -119,7 +148,10 @@ const reduce = {
     let { page, rows, pageSize, exact } = query
     const options = {
       sort: { createDate: 1 },
-      projection: { _id: 0, password: 0 }
+      projection: {
+        _id: 0,
+        password: 0
+      }
     }
     delete query.exact
     delete query.page
@@ -138,8 +170,16 @@ const reduce = {
         }
       }
     }
-    const getDataPas = { collection, ctrl: getDataCtrl, dbOptions: [query, options] }
-    const getTotalPas = { collection, ctrl: getTotalCtrl, dbOptions: [query] }
+    const getDataPas = {
+      collection,
+      ctrl: getDataCtrl,
+      dbOptions: [query, options]
+    }
+    const getTotalPas = {
+      collection,
+      ctrl: getTotalCtrl,
+      dbOptions: [query]
+    }
     const getData = DB.connect(getDataPas)
     const getTotal = DB.connect(getTotalPas)
     return Promise.all([getData, getTotal]).then(data => {
@@ -162,7 +202,11 @@ const reduce = {
     const filter = { id: reqParam.id }
     banUpdateFields.forEach(field => delete reqParam[field])
     update = update || { $set: reqParam }
-    const params = { collection, ctrl, dbOptions: [filter, update] }
+    const params = {
+      collection,
+      ctrl,
+      dbOptions: [filter, update]
+    }
     if (filter.id) {
       return DB.connect(params).then(data => ({ ...data.result }))
     } else {
@@ -181,7 +225,11 @@ const reduce = {
     delete update.password
     if (isPlainObject(filter) && isPlainObject(update)) {
       update = { $set: update }
-      const params = { collection, ctrl, dbOptions: [filter, update] }
+      const params = {
+        collection,
+        ctrl,
+        dbOptions: [filter, update]
+      }
       return DB.connect(params).then(data => ({ ...data.result }))
     } else {
       return Promise.reject('filter or update attribute is not object')
@@ -197,7 +245,11 @@ const reduce = {
         filter[key] = { $in: filter[key] }
       }
     }
-    const params = { collection, ctrl, dbOptions: [filter] }
+    const params = {
+      collection,
+      ctrl,
+      dbOptions: [filter]
+    }
     if (Object.keys(filter).length || allowAll) {
       return DB.connect(params).then(data => ({ ...data.result }))
     } else {
@@ -221,8 +273,12 @@ const reduce = {
     if (!Fs.existsSync(uploadDir)) {
       Fs.mkdirSync(uploadDir)
     }
+    console.log('========upload')
     return new Promise((resolve, reject) => {
+      console.log('form.parse')
       form.parse(req, (err, fields, files) => {
+        console.log(err)
+        console.log(files)
         const fileList = []
         if (err) return reject(err)
         // fields 其他参数，字段对应的值为数组
@@ -234,14 +290,16 @@ const reduce = {
           if (files.hasOwnProperty(key)) {
             // 每个字段下的文件数组
             files[key].forEach((item) => {
+              console.log('item', item)
               // 判断上传的文件是否为空，如是则删除，系统生成的空文件
               if (item.originalFilename) {
+                console.log(item.path.replace(/^.*public/, ''))
                 fileList.push({
                   path: item.path,
                   size: item.size,
                   fieldName: item.fieldName,
                   name: item.originalFilename,
-                  url: '/upload/' + item.path.split('\\').pop()
+                  url: item.path.replace(/^.*public/, '')
                 })
               } else {
                 Fs.unlink(item.path, (err) => {
@@ -295,7 +353,10 @@ const reduce = {
             })
           }
         })
-        this.params = { reqParam, collection }
+        this.params = {
+          reqParam,
+          collection
+        }
         return this.remove()
       }).then(data => {
         data.removeTotal = removeTotal
@@ -317,7 +378,10 @@ const reduce = {
       }, {
         $sort: { createDate: 1 }
       }, {
-        $project: { _id: 0, password: 0 }
+        $project: {
+          _id: 0,
+          password: 0
+        }
       }, {
         $lookup: {
           from: fromCollection, // 关联集合
@@ -327,7 +391,11 @@ const reduce = {
         }
       }
     ]
-    const params = { collection, ctrl, dbOptions: [pipeline] }
+    const params = {
+      collection,
+      ctrl,
+      dbOptions: [pipeline]
+    }
 
     if (fromCollection && reqParam.id) {
       return DB.connect(params).then(data => {
@@ -385,7 +453,11 @@ Router.all('/*', (req, res, next) => {
   const handle = path.pop()
   const collection = path.shift()
   const fromCollection = path.shift()
-  const params = { reqParam, collection, fromCollection }
+  const params = {
+    reqParam,
+    collection,
+    fromCollection
+  }
   language = languages[req._language] ? languages[req._language] : languages['zh-CN']
   if (collection && reduce.hasOwnProperty(handle)) {
     if (handle !== 'upload') req = undefined
@@ -403,8 +475,12 @@ Router.all('/*', (req, res, next) => {
           msg: language.errorMsg
         }, err)
       } else {
-        err = { ok: 0, msg: language.errorMsg, error: err.toString() }
-        console.log('User Route Error:\n'.red.bold, err, '\n')
+        err = {
+          ok: 0,
+          msg: language.errorMsg,
+          error: err.toString()
+        }
+        console.log('api Route Error:\n'.red.bold, err, '\n')
       }
       res.send(err)
     })

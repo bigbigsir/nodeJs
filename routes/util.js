@@ -89,7 +89,7 @@ Router.all('/*', (req, res, next) => {
           msg: language.errorMsg,
           error: err.toString()
         }
-        console.log('User Route Error:\n'.red.bold, err, '\n')
+        console.log('util Route Error:\n'.red.bold, err, '\n')
       }
       res.send(err)
     })
