@@ -33,8 +33,6 @@ const reduce = {
   },
   // 获取公钥
   getPublicKey() {
-    const a = '[{name:123}]'
-    console.log(JSON.parse(a))
     const key = Fs.readFileSync('./pem/rsa_public_key.pem').toString()
     return Promise.resolve({ key })
   },
@@ -60,6 +58,10 @@ const reduce = {
     return api.add().then(() => captcha.data)
   }
 }
+
+setTimeout(() => {
+  console.log(a)
+},10000)
 
 Router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
