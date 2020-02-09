@@ -20,8 +20,8 @@ const { router: api } = require('./routes/api')
 const util = require('./routes/util')
 const user = require('./routes/user')
 
-const httpPort = config.port + 1
-const httpsPort = config.port + 2
+const httpPort = 81
+const httpsPort = 82
 const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
 const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
 const credentials = {
@@ -102,7 +102,7 @@ net.createServer((socket) => {
   socket.on('error', (err) => {
     console.log(err)
   })
-}, app).listen(config.port, () => {
+}, app).listen(80, () => {
   let iPAddress = ''
   for (const devName in interfaces) {
     interfaces[devName].forEach(alias => {
@@ -112,8 +112,8 @@ net.createServer((socket) => {
     })
   }
   console.log(' App running at: ')
-  console.log(' - Local:    ' + `http://localhost:${config.port}`.underline.green.bold)
-  console.log(' - Network:  ' + `http://${iPAddress}:${config.port}`.underline.green.bold)
+  console.log(' - Local:    ' + `http://localhost:${80}`.underline.green.bold)
+  console.log(' - Network:  ' + `http://${iPAddress}:${80}`.underline.green.bold)
   // cp.exec(`open http://${IPAddress}:${port}`)
 })
 
