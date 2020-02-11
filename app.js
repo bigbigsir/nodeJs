@@ -38,7 +38,7 @@ app.use('/', history({
       to: '/h5/index.html'
     }
   ],
-  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
+  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
 }))
 app.use(compression())
 // view engine setup
