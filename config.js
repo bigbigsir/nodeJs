@@ -3,8 +3,7 @@
  * Date: 2019/1/15
  */
 
-const Config = {
-  port: 3000,
+const config = {
   sessionOps: {
     name: 'express-session',
     secret: 'emoji',
@@ -19,4 +18,4 @@ const Config = {
   dbOptions: { useNewUrlParser: true }
 }
 
-module.exports = Config
+module.exports = config

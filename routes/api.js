@@ -269,16 +269,13 @@ const reduce = {
       // maxFilesSize: Infinity,
       // maxFieldsSize: 1024 * 1024 * 2
     }
-    const form = new Multiparty.Form(options)
     if (!Fs.existsSync(uploadDir)) {
       Fs.mkdirSync(uploadDir)
     }
-    console.log('========upload')
     return new Promise((resolve, reject) => {
       console.log('form.parse')
+      const form = new Multiparty.Form(options)
       form.parse(req, (err, fields, files) => {
-        console.log(err)
-        console.log(files)
         const fileList = []
         if (err) return reject(err)
         // fields 其他参数，字段对应的值为数组
@@ -293,13 +290,12 @@ const reduce = {
               console.log('item', item)
               // 判断上传的文件是否为空，如是则删除，系统生成的空文件
               if (item.originalFilename) {
-                console.log(item.path.replace(/^.*public/, ''))
                 fileList.push({
                   path: item.path,
                   size: item.size,
                   fieldName: item.fieldName,
                   name: item.originalFilename,
-                  url: item.path.replace(/^.*public/, '')
+                  url: item.path.replace(/\\/g, '/').replace(/^.*public/, '')
                 })
               } else {
                 Fs.unlink(item.path, (err) => {

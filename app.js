@@ -6,7 +6,6 @@ const http = require('http')
 const https = require('https')
 const logger = require('morgan')
 const express = require('express')
-const cp = require('child_process')
 const createError = require('http-errors')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
@@ -20,8 +19,6 @@ const { router: api } = require('./routes/api')
 const util = require('./routes/util')
 const user = require('./routes/user')
 
-const httpPort = config.port + 1
-const httpsPort = config.port + 2
 const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
 const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
 const credentials = {
@@ -31,7 +28,6 @@ const credentials = {
 
 const app = express()
 app.use('/', history({
-  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
   rewrites: [
     {
       from: /^\/admin/,
@@ -41,7 +37,8 @@ app.use('/', history({
       from: /^\/h5/,
       to: '/h5/index.html'
     }
-  ]
+  ],
+  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
 }))
 app.use(compression())
 // view engine setup
@@ -79,59 +76,60 @@ app.use(function (err, req, res) {
   res.render('error')
 })
 
-// 监听https http 端口
-http.createServer(app).listen(httpPort)
-https.createServer(credentials, app).listen(httpsPort)
-
-// 创建服务器
-net.createServer((socket) => {
-  socket.once('data', (buf) => {
-    // buf 返回格式数组，如果https访问，buf[0]为十六进制
-    // https数据流的第一位是十六进制 “16” ，转换成十进制就是22
-    const address = buf[0] === 22 ? httpsPort : httpPort
-    // 创建指向https或http服务器的链接
-    const proxy = net.createConnection(address, () => {
-      proxy.write(buf)
-      // 反向代理的过程，tcp接受的数据交给代理链接，代理链接服务器端返回数据交由socket返回给客户端
-      socket.pipe(proxy).pipe(socket)
+function init(port, httpPort, httpsPort) {
+  // 监听https http 端口
+  http.createServer(app).listen(httpPort)
+  https.createServer(credentials, app).listen(httpsPort)
+  // 创建服务器
+  net.createServer(socket => {
+    socket.once('data', (buf) => {
+      // buf 返回格式数组，如果https访问，buf[0]为十六进制
+      // https数据流的第一位是十六进制 “16” ，转换成十进制就是22
+      const address = buf[0] === 22 ? httpsPort : httpPort
+      // 创建指向https或http服务器的链接
+      const proxy = net.createConnection(address, () => {
+        proxy.write(buf)
+        // 反向代理的过程，tcp接受的数据交给代理链接，代理链接服务器端返回数据交由socket返回给客户端
+        socket.pipe(proxy).pipe(socket)
+      })
+      proxy.on('error', (err) => {
+        console.log(err)
+      })
     })
-    proxy.on('error', (err) => {
+    socket.on('error', (err) => {
       console.log(err)
     })
+  }, app).listen(port, () => {
+    let iPAddress = ''
+    for (const devName in interfaces) {
+      interfaces[devName].forEach(alias => {
+        if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+          iPAddress = alias.address
+        }
+      })
+    }
+    console.log(' App running at: ')
+    console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold)
+    console.log(' - Network:  ' + `http://${iPAddress}:${port}`.underline.green.bold)
   })
-  socket.on('error', (err) => {
-    console.log(err)
-  })
-}, app).listen(config.port, () => {
-  let iPAddress = ''
-  for (const devName in interfaces) {
-    interfaces[devName].forEach(alias => {
-      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-        iPAddress = alias.address
-      }
-    })
-  }
-  console.log(' App running at: ')
-  console.log(' - Local:    ' + `http://localhost:${config.port}`.underline.green.bold)
-  console.log(' - Network:  ' + `http://${iPAddress}:${config.port}`.underline.green.bold)
-  // cp.exec(`open http://${IPAddress}:${port}`)
-})
 
-// 修改端口号后需要使用命令:node app启动服务
-// const server = app.listen(config.port, ()=> {
-//   let iPAddress = ''
-//   const port = server.address().port
-//   for (const devName in interfaces) {
-//     interfaces[devName].forEach(alias => {
-//       if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
-//         iPAddress = alias.address
-//       }
-//     })
-//   }
-//   console.log(' App running at: ')
-//   console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold)
-//   console.log(' - Network:  ' + `http://${iPAddress}:${port}`.underline.green.bold)
-//   // cp.exec(`open http://${IPAddress}:${port}`)
-// })
+  // const server = app.listen(port, () => {
+  //   let iPAddress = ''
+  //   const port = server.address().port
+  //   for (const devName in interfaces) {
+  //     interfaces[devName].forEach(alias => {
+  //       if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+  //         iPAddress = alias.address
+  //       }
+  //     })
+  //   }
+  //   console.log(' App running at: ')
+  //   console.log(' - Local:    ' + `http://localhost:${port}`.underline.green.bold)
+  //   console.log(' - Network:  ' + `http://${iPAddress}:${port}`.underline.green.bold)
+  //   // cp.exec(`open http://${IPAddress}:${port}`)
+  // })
+}
 
-module.exports = app
+module.exports = {
+  init
+}
