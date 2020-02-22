@@ -1,128 +1,30 @@
 {
   "apps": [
     {
-      // 项目名
-      "name": "port_80",
-      // 执行文件
-      "script": "./port_80.js",
-      // 根目录
       "cwd": "./",
-      // 传递给脚本的参数
-      "args": "",
-      // 指定的脚本解释器
-      "interpreter": "",
-      // 传递给解释器的参数
-      "interpreter_args": "",
-      // 是否监听文件变动然后重启
-      "watch": true,
-      // 不用监听的文件
-      "ignore_watch": [
-        "logs",
-        "public",
-        "node_modules"
-      ],
-      // 应用启动模式，支持fork和cluster模式
-      "exec_mode": "fork",
-      // 应用启动实例个数，仅在cluster模式有效 默认为fork；或者 max
-      "instances": "fork",
-      // 最大内存限制数，超出自动重启
-      "max_memory_restart": 8,
-      // 错误日志文件
-      "error_file": "./logs/app-err.log",
-      // 正常日志文件
-      "out_file": "./logs/app-out.log",
-      // 设置追加日志而不是新建日志
+      "name": "port_80",
+      "script": "port_80.js",
       "merge_logs": true,
-      // 指定日志文件的时间格式
-      "log_date_format": "YYYY-MM-DD HH:mm:ss",
-      // 应用运行少于时间被认为是异常启动
-      "min_uptime": "60s",
-      // 最大异常重启次数，即小于min_uptime运行时间重启次数；
-      "max_restarts": 30,
-      // 默认为true, 发生异常的情况下自动重启
-      "autorestart": true,
-      // crontab时间格式重启应用，目前只支持cluster模式;
-      "cron_restart": "",
-      // 异常重启情况下，延时重启时间
-      "restart_delay": 60,
-      // 环境参数，当前指定为生产环境 process.env.NODE_ENV
       "env": {
-        // process.env.REMOTE_ADDR
-        "NODE_ENV": "production",
-        "REMOTE_ADDR": "爱上大声地"
-      },
-      // 环境参数，当前指定为开发环境 pm2 start app.js --env_dev
-      "env_dev": {
         "NODE_ENV": "development",
-        "REMOTE_ADDR": ""
+        "NETWORK_ENV": "inner"
       },
-      // 环境参数，当前指定为测试环境 pm2 start app.js --env_test
-      "env_test": {
-        "NODE_ENV": "test",
-        "REMOTE_ADDR": ""
-      }
+      "out_file": "./logs/port_80/out.log",
+      "error_file": "./logs/port_80/error.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss"
     },
     {
-      // 项目名
-      "name": "port_3000",
-      // 执行文件
-      "script": "./port_3000.js",
-      // 根目录
       "cwd": "./",
-      // 传递给脚本的参数
-      "args": "",
-      // 指定的脚本解释器
-      "interpreter": "",
-      // 传递给解释器的参数
-      "interpreter_args": "",
-      // 是否监听文件变动然后重启
-      "watch": true,
-      // 不用监听的文件
-      "ignore_watch": [
-        "logs",
-        "public",
-        "node_modules"
-      ],
-      // 应用启动模式，支持fork和cluster模式
-      "exec_mode": "fork",
-      // 应用启动实例个数，仅在cluster模式有效 默认为fork；或者 max
-      "instances": "fork",
-      // 最大内存限制数，超出自动重启
-      "max_memory_restart": 8,
-      // 错误日志文件
-      "error_file": "./logs/app-err.log",
-      // 正常日志文件
-      "out_file": "./logs/app-out.log",
-      // 设置追加日志而不是新建日志
+      "name": "port_3000",
+      "script": "port_3000.js",
       "merge_logs": true,
-      // 指定日志文件的时间格式
-      "log_date_format": "YYYY-MM-DD HH:mm:ss",
-      // 应用运行少于时间被认为是异常启动
-      "min_uptime": "60s",
-      // 最大异常重启次数，即小于min_uptime运行时间重启次数；
-      "max_restarts": 30,
-      // 默认为true, 发生异常的情况下自动重启
-      "autorestart": true,
-      // crontab时间格式重启应用，目前只支持cluster模式;
-      "cron_restart": "",
-      // 异常重启情况下，延时重启时间
-      "restart_delay": 60,
-      // 环境参数，当前指定为生产环境 process.env.NODE_ENV
       "env": {
-        // process.env.REMOTE_ADDR
-        "NODE_ENV": "production",
-        "REMOTE_ADDR": "爱上大声地"
-      },
-      // 环境参数，当前指定为开发环境 pm2 start app.js --env_dev
-      "env_dev": {
         "NODE_ENV": "development",
-        "REMOTE_ADDR": ""
+        "NETWORK_ENV": "inner"
       },
-      // 环境参数，当前指定为测试环境 pm2 start app.js --env_test
-      "env_test": {
-        "NODE_ENV": "test",
-        "REMOTE_ADDR": ""
-      }
+      "out_file": "./logs/port_3000/out.log",
+      "error_file": "./logs/port_3000/error.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss"
     }
   ]
 }
