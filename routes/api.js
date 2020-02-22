@@ -14,7 +14,7 @@ const languages = require('../language')
 const Router = Express()
 
 let language
-
+// Object.prototype.hasOwnProperty.call
 const reduce = {
   // 新增单个或多个数据到集合中
   add() {
@@ -104,7 +104,7 @@ const reduce = {
       delete query.exact
     } else {
       for (const key in query) {
-        if (query.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(query, key)) {
           if (typeof query[key] === 'string' && key !== 'id') {
             query[key] = { $regex: query[key] }
           } else if (Array.isArray(query[key])) {
@@ -165,7 +165,7 @@ const reduce = {
     options.skip = (page - 1) * pageSize
     if (!exact) {
       for (const key in query) {
-        if (query.hasOwnProperty(key) && typeof query[key] === 'string' && key !== 'id') {
+        if (Object.prototype.hasOwnProperty.call(query, key) && typeof query[key] === 'string' && key !== 'id') {
           query[key] = { $regex: query[key] }
         }
       }
@@ -241,7 +241,7 @@ const reduce = {
     const ctrl = 'deleteMany'
     const { reqParam: filter, collection } = this.params
     for (const key in filter) {
-      if (filter.hasOwnProperty(key) && Array.isArray(filter[key])) {
+      if (Object.prototype.hasOwnProperty.call(filter, key) && Array.isArray(filter[key])) {
         filter[key] = { $in: filter[key] }
       }
     }
