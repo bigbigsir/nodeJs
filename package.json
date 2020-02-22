@@ -1,9 +1,9 @@
 {
-  "name": "node-deme",
+  "name": "node-demo",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node app",
+    "start": "node port_3000.js",
     "lintjs": "eslint --fix --ext .js routes"
   },
   "dependencies": {
