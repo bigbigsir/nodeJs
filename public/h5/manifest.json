@@ -1,24 +1,24 @@
 {
-  "name": "展示页面",
-  "short_name": "展示",
+  "name": "h5-页面",
+  "short_name": "h5",
   "icons": [
     {
-      "src": "./img/logo_96.png",
+      "src": "/h5/img/logo_96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "./img/logo_144.png",
+      "src": "/h5/img/logo_144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "./img/logo_180.png",
+      "src": "/h5/img/logo_180.png",
       "sizes": "180x180",
       "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": "/h5",
   "display": "standalone",
   "background_color": "#282828",
   "theme_color": "#282828"
