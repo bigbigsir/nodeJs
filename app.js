@@ -40,7 +40,7 @@ app.use('/', history({
   ],
   htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
 }))
-// app.use(compression())
+app.use(compression())
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
