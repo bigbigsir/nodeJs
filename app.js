@@ -31,11 +31,25 @@ app.use('/', history({
   rewrites: [
     {
       from: /^\/admin/,
-      to: '/admin/index.html'
+      // to: '/admin/index.html'
+      to(context) {
+        const reg = /^.+\.[a-z\d]+$/
+        if (reg.test(context.parsedUrl.pathname)) {
+          return context.parsedUrl.pathname
+        }
+        return '/h5/index.html'
+      }
     },
     {
       from: /^\/h5/,
-      to: '/h5/index.html'
+      // to: '/h5/index.html'
+      to(context) {
+        const reg = /^.+\.[a-z\d]+$/
+        if (reg.test(context.parsedUrl.pathname)) {
+          return context.parsedUrl.pathname
+        }
+        return '/h5/index.html'
+      }
     }
   ],
   htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
