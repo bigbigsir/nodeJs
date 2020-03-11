@@ -3,17 +3,17 @@
   "short_name": "h5",
   "icons": [
     {
-      "src": "/h5/img/logo_96.png",
+      "src": "./img/logo_96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "/h5/img/logo_144.png",
+      "src": "./img/logo_144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "/h5/img/logo_180.png",
+      "src": "./img/logo_180.png",
       "sizes": "180x180",
       "type": "image/png"
     }
