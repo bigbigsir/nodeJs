@@ -8,12 +8,12 @@
 require('colors')
 const Fs = require('fs')
 const Crypto = require('crypto')
-const Express = require('express')
+const express = require('express')
 const CronJob = require('cron').CronJob
 const Jwt = require('../common/token')
 const languages = require('../language')
 const { api } = require('./api')
-const Router = Express()
+const router = express.Router()
 
 let language
 
@@ -161,7 +161,7 @@ function generateHmac(str) {
   return md5.update(str).digest('hex')
 }
 
-Router.all('/*', (req, res, next) => {
+router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
   const path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/')
   const handle = path.pop()
@@ -193,7 +193,7 @@ Router.all('/*', (req, res, next) => {
   }
 })
 
-module.exports = Router
+module.exports = router
 
 // 定时任务 每天04点0分0秒执行,清除验证码集合
 new CronJob('0 0 4 * * *', function () {

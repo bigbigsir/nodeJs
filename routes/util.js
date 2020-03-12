@@ -5,13 +5,13 @@
 'use strict'
 
 const Fs = require('fs')
-const Express = require('express')
+const express = require('express')
 const Pinyin = require('node-pinyin')
 const svgCaptcha = require('svg-captcha')
 const languages = require('../language')
 const { api } = require('./api')
 
-const Router = Express()
+const router = express.Router()
 
 let language
 
@@ -59,7 +59,7 @@ const reduce = {
   }
 }
 
-Router.all('/*', (req, res, next) => {
+router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
   const path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/')
   const handle = path.pop()
@@ -98,4 +98,4 @@ Router.all('/*', (req, res, next) => {
   }
 })
 
-module.exports = Router
+module.exports = router
