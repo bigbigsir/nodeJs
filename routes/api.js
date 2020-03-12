@@ -6,12 +6,12 @@
 
 require('colors')
 const Fs = require('fs')
-const Express = require('express')
+const express = require('express')
 const Multiparty = require('multiparty')
 const DB = require('../mongodb/connect')
 const isPlainObject = require('lodash/isPlainObject')
 const languages = require('../language')
-const Router = Express()
+const router = express.Router()
 
 let language
 // Object.prototype.hasOwnProperty.call
@@ -443,7 +443,7 @@ const reduce = {
   }
 }
 
-Router.all('/*', (req, res, next) => {
+router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
   const path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/')
   const handle = path.pop()
@@ -487,5 +487,5 @@ Router.all('/*', (req, res, next) => {
 
 module.exports = {
   api: reduce,
-  router: Router
+  router
 }

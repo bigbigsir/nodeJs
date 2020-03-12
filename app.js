@@ -14,7 +14,7 @@ const interfaces = require('os').networkInterfaces() // 在开发环境中获取
 const history = require('connect-history-api-fallback')
 
 const config = require('./config')
-const index = require('./routes/index')
+const base = require('./routes/index')
 const { router: api } = require('./routes/api')
 const util = require('./routes/util')
 const user = require('./routes/user')
@@ -27,7 +27,14 @@ const credentials = {
 }
 
 const app = express()
-app.use('/', history({
+app.use((req, res, next) => {
+  if (req.protocol === 'http') {
+    res.redirect(301, `https://${req.headers.host + req.originalUrl}`)
+  } else {
+    next()
+  }
+})
+app.use(history({
   rewrites: [
     {
       from: /^\/admin/,
@@ -36,7 +43,7 @@ app.use('/', history({
         if (reg.test(context.parsedUrl.pathname)) {
           return context.parsedUrl.pathname
         }
-        return '/h5/index.html'
+        return '/admin/index.html'
       }
     },
     {
@@ -67,7 +74,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(session(config.sessionOps))
 
 // routers
-app.use('/*', index)
+app.use('/*', base)
 app.use('/api', api)
 app.use('/util', util)
 app.use('/user', user)

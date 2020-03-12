@@ -5,10 +5,10 @@
 'use strict'
 
 require('colors')
-const Express = require('express')
+const express = require('express')
 const Jwt = require('../common/token')
 const languages = require('../language')
-const Router = Express()
+const router = express.Router()
 
 // 处理请求参数
 function formatReqParam(req) {
@@ -41,7 +41,7 @@ function authorization(req, res, next) {
   let token
   if (req.method === 'OPTIONS') return res.sendStatus(200)
   formatReqParam(req)
-  if (/^\/(util|user)/.test(req.baseUrl)) {
+  if (/^\/(util|user)/.test(req.originalUrl)) {
     next()
   } else {
     const language = languages[req._language] ? languages[req._language] : languages['zh-CN']
@@ -56,9 +56,9 @@ function authorization(req, res, next) {
   }
 }
 
-Router.all('/*', (req, res, next) => {
+router.use((req, res, next) => {
   setHeader(req, res)
   authorization(req, res, next)
 })
 
-module.exports = Router
+module.exports = router
