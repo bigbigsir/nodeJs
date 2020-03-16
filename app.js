@@ -28,8 +28,13 @@ const credentials = {
 
 const app = express()
 app.use((req, res, next) => {
+  console.log(req.originalUrl)
   if (req.protocol === 'http') {
     res.redirect(301, `https://${req.headers.host + req.originalUrl}`)
+  } else if (req.originalUrl === '/h5') {
+    res.redirect(301, `https://${req.headers.host + req.originalUrl}/`)
+  } else if (req.originalUrl === '/admin') {
+    res.redirect(301, `https://${req.headers.host + req.originalUrl}/`)
   } else {
     next()
   }
