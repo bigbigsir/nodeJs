@@ -1,6 +1,6 @@
 {
-  "name": "h5-页面",
-  "short_name": "h5",
+  "name": "凯发",
+  "short_name": "凯发",
   "icons": [
     {
       "src": "./img/logo_96.png",
@@ -18,7 +18,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/h5",
+  "start_url": "/h5/home",
   "display": "standalone",
   "background_color": "#282828",
   "theme_color": "#141414"
