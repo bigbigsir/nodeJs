@@ -19,8 +19,8 @@ const { router: api } = require('./routes/api')
 const util = require('./routes/util')
 const user = require('./routes/user')
 
-const privateKey = fs.readFileSync('./pem/3437218.key', 'utf8')
-const certificate = fs.readFileSync('./pem/3437218.pem', 'utf8')
+const privateKey = fs.readFileSync('./pem/3636407_www.60kg.top.key', 'utf8')
+const certificate = fs.readFileSync('./pem/3636407_www.60kg.top.pem', 'utf8')
 const credentials = {
   key: privateKey,
   cert: certificate

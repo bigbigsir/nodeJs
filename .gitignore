@@ -2,6 +2,7 @@
 node_modules
 public/upload
 logs
+pem
 
 # local env files
 .env.local
