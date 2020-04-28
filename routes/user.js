@@ -9,7 +9,6 @@ require('colors')
 const Fs = require('fs')
 const Crypto = require('crypto')
 const express = require('express')
-const CronJob = require('cron').CronJob
 const Jwt = require('../common/token')
 const languages = require('../language')
 const { api } = require('./api')
@@ -194,12 +193,3 @@ router.all('/*', (req, res, next) => {
 })
 
 module.exports = router
-
-// 定时任务 每天04点0分0秒执行,清除验证码集合
-new CronJob('0 0 4 * * *', function () {
-  api.params = {
-    collection: '_captcha',
-    reqParam: {}
-  }
-  api.remove(true)
-}, null, true)

@@ -8,12 +8,12 @@ const logger = require('morgan')
 const express = require('express')
 const createError = require('http-errors')
 const cookieParser = require('cookie-parser')
-const session = require('express-session')
+// const session = require('express-session')
 const compression = require('compression')
 const interfaces = require('os').networkInterfaces() // 在开发环境中获取局域网中的本机iP地址
 const history = require('connect-history-api-fallback')
 
-const config = require('./config')
+// const config = require('./config')
 const base = require('./routes/index')
 const { router: api } = require('./routes/api')
 const util = require('./routes/util')
@@ -76,7 +76,7 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // session
-app.use(session(config.sessionOps))
+// app.use(session(config.sessionOps))
 
 // routers
 app.use('/*', base)
