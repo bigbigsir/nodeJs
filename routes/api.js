@@ -24,7 +24,8 @@ const reduce = {
     const docs = isArray ? reqParam : [reqParam]
     docs.forEach((item) => {
       item.id = item._id = DB.ObjectID().toString()
-      item.createDate = +new Date()
+      item.createDate = new Date()
+      item.createTimeStamp = +item.createDate
     })
     const params = {
       collection,
