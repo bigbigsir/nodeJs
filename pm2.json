@@ -15,7 +15,7 @@
       "error_file": "./logs/port_80/error.log",
       "log_date_format": "YYYY-MM-DD HH:mm:ss",
       "env": {
-        "NODE_ENV": "development",
+        "NODE_ENV": "production",
         "NETWORK_ENV": "inner"
       }
     },
@@ -34,7 +34,7 @@
       "error_file": "./logs/port_3000/error.log",
       "log_date_format": "YYYY-MM-DD HH:mm:ss",
       "env": {
-        "NODE_ENV": "development",
+        "NODE_ENV": "production",
         "NETWORK_ENV": "inner"
       }
     }
