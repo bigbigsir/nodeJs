@@ -33,6 +33,8 @@ app.use((req, res, next) => {
     res.redirect(301, `https://${req.headers.host + req.originalUrl}`)
   } else if (req.originalUrl === '/h5') {
     res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
+  } else if (req.originalUrl === '/web') {
+    res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
   } else if (req.originalUrl === '/admin') {
     res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
   } else {
@@ -59,6 +61,15 @@ app.use(history({
           return context.parsedUrl.pathname
         }
         return '/h5/index.html'
+      }
+    }, {
+      from: /^\/web/,
+      to(context) {
+        const reg = /^.+\.[a-z\d]+$/
+        if (reg.test(context.parsedUrl.pathname)) {
+          return context.parsedUrl.pathname
+        }
+        return '/web/index.html'
       }
     }
   ],

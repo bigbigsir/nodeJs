@@ -1,0 +1,25 @@
+{
+  "name": "凯发",
+  "short_name": "凯发",
+  "icons": [
+    {
+      "src": "./img/logo_96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "./img/logo_144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "./img/logo_180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/web/home",
+  "display": "standalone",
+  "background_color": "#282828",
+  "theme_color": "#141414"
+}
