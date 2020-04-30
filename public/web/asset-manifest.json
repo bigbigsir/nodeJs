@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "https://static.60kg.top/web/cdn/A02F/static/css/main.cadd7ac5.chunk.css",
-    "main.js": "https://static.60kg.top/web/cdn/A02F/static/js/main.108f3cd2.chunk.js",
-    "main.js.map": "https://static.60kg.top/web/cdn/A02F/static/js/main.108f3cd2.chunk.js.map",
+    "main.js": "https://static.60kg.top/web/cdn/A02F/static/js/main.a3408968.chunk.js",
+    "main.js.map": "https://static.60kg.top/web/cdn/A02F/static/js/main.a3408968.chunk.js.map",
     "runtime-main.js": "https://static.60kg.top/web/cdn/A02F/static/js/runtime-main.c5c37eed.js",
     "runtime-main.js.map": "https://static.60kg.top/web/cdn/A02F/static/js/runtime-main.c5c37eed.js.map",
     "cdn/A02F/static/js/2.1aedad48.chunk.js": "https://static.60kg.top/web/cdn/A02F/static/js/2.1aedad48.chunk.js",
@@ -51,13 +51,13 @@
     "cdn/A02F/static/img/vip.png.webp": "https://static.60kg.top/web/cdn/A02F/static/img/vip.png.b9f3a2f6.webp",
     "cdn/A02F/static/js/2.1aedad48.chunk.js.LICENSE.txt": "https://static.60kg.top/web/cdn/A02F/static/js/2.1aedad48.chunk.js.LICENSE.txt",
     "index.html": "https://static.60kg.top/web/index.html",
-    "precache-manifest.d05ed400ab012a638ecb21e190fb0cac.js": "https://static.60kg.top/web/precache-manifest.d05ed400ab012a638ecb21e190fb0cac.js",
+    "precache-manifest.67dc172b01163549a7dd505ef6c9b8ec.js": "https://static.60kg.top/web/precache-manifest.67dc172b01163549a7dd505ef6c9b8ec.js",
     "service-worker.js": "https://static.60kg.top/web/service-worker.js"
   },
   "entrypoints": [
     "cdn/A02F/static/js/runtime-main.c5c37eed.js",
     "cdn/A02F/static/js/2.1aedad48.chunk.js",
     "cdn/A02F/static/css/main.cadd7ac5.chunk.css",
-    "cdn/A02F/static/js/main.108f3cd2.chunk.js"
+    "cdn/A02F/static/js/main.a3408968.chunk.js"
   ]
 }
