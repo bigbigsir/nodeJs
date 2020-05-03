@@ -1,0 +1,2 @@
+(this.webpackJsonpa02_web=this.webpackJsonpa02_web||[]).push([[5],{121:function(e,s,a){e.exports={promo:"css-3JRns",promo__iframe:"css-1KFsX"}},124:function(e,s,a){"use strict";a.r(s);var n=a(0),r=a.n(n),t=a(3),o=a.n(t),c=a(121),i=a.n(c),m=o.a.bind(i.a);s.default=function(){return r.a.createElement("div",{className:m("promo")},r.a.createElement("iframe",{src:"https://k801.com/signinmay",className:m("promo__iframe")}))}}}]);
+//# sourceMappingURL=5.a3831381.chunk.js.map
