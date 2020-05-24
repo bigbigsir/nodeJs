@@ -28,19 +28,19 @@ const credentials = {
 
 const app = express()
 
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'production' && req.protocol === 'http') {
-    res.redirect(301, `https://${req.headers.host + req.originalUrl}`)
-  } else if (req.originalUrl === '/h5') {
-    res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
-  } else if (req.originalUrl === '/web') {
-    res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
-  } else if (req.originalUrl === '/admin') {
-    res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
-  } else {
-    next()
-  }
-})
+// app.use((req, res, next) => {
+//   if (process.env.NODE_ENV === 'production' && req.protocol === 'http') {
+//     res.redirect(301, `https://${req.headers.host + req.originalUrl}`)
+//   } else if (req.originalUrl === '/h5') {
+//     res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
+//   } else if (req.originalUrl === '/web') {
+//     res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
+//   } else if (req.originalUrl === '/admin') {
+//     res.redirect(301, `${req.protocol}://${req.headers.host + req.originalUrl}/`)
+//   } else {
+//     next()
+//   }
+// })
 app.use(history({
   rewrites: [
     {
