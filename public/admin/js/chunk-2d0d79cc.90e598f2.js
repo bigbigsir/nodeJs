@@ -1,0 +1,2 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d0d79cc"],{"780e":function(n,o,c){n.exports=c.p+"fonts/element-icons.2fad952a.woff"}}]);
+//# sourceMappingURL=chunk-2d0d79cc.90e598f2.js.map

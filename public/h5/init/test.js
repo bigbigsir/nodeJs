@@ -1,1 +1,0 @@
-"use strict";for(var i=0,len=1e5;i<len;i++);
