@@ -8,9 +8,10 @@ const Fs = require('fs')
 const express = require('express')
 const Pinyin = require('node-pinyin')
 const svgCaptcha = require('svg-captcha')
-const languages = require('../language')
-const { api } = require('./api')
+const languages = require('../../language')
+const { api } = require('../api')
 const createHandler = require('github-webhook-handler')
+const { githubWebHooks } = require('./handels')
 const handler = createHandler({
   path: '/webhooks',
   secret: 'd2ViaG9va3M='
@@ -136,13 +137,7 @@ function RunCmd(cmd, args, cb) {
   })
 }
 
-router.post('/webhooks', (req, res, next) => {
-  handler(req, res, function (err) {
-    console.log('err:\n', err)
-    res.statusCode = 404
-    res.end('no such location')
-  })
-})
+router.post('/webHooks', githubWebHooks)
 
 handler.on('error', function (err) {
   console.error('Error:', err.message)
