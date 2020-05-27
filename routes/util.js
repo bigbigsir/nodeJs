@@ -124,34 +124,41 @@ router.all('/*', (req, res, next) => {
   }
 })
 
-function RunCmd(cmd, cb) {
-  const spawn = require('child_process').exec
-  const child = spawn(cmd, (data) => {
-    console.log(data)
-  })
+function RunCmd(cmd, args, cb) {
   let result = ''
+  const spawn = require('child_process').spawn
+  const child = spawn(cmd, args)
+
   child.stdout.on('data', function (data) {
     result += data.toString()
-    console.log('data', data.toString())
+    console.log('stdout data', result)
   })
 
-  child.on('error', function (data) {
-    result += data.toString()
-    console.log('data', data.toString())
+  child.stderr.on('data', (data) => {
+    console.log(`stderr data: ${data}`)
   })
 
   child.stdout.on('end', function (end) {
-    console.log('end', end)
+    console.log('stdout end', end, '\n')
+    console.log('result', result, '\n')
     cb(result)
   })
 
+  child.stderr.on('end', function (end) {
+    console.log('stderr end', end, '\n')
+  })
+
+  child.on('error', function (data) {
+    console.log('child error', data.toString())
+  })
+
   child.on('close', (code) => {
-    console.log(`child 进程退出，退出码 ${code}`)
+    console.log(`child close 进程退出，退出码 ${code}`)
   })
 }
 
 router.get('/webhooks', (req, res, next) => {
-  RunCmd('git add .', (result) => {
+  RunCmd('git', ['add','.'], (result) => {
     res.send(result)
   })
 })
