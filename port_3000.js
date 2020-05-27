@@ -1,3 +1,3 @@
 const app = require('./app.js')
 
-app.init(3001, 3002, 3003)
+app.init(3000, 3001, 3002)
