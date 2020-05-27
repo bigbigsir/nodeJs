@@ -19,6 +19,7 @@
     "express": "~4.17.1",
     "express-session": "^1.17.0",
     "express-to-https": "^1.0.3",
+    "github-webhook-handler": "^1.0.0",
     "http-errors": "~1.7.3",
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.5.1",

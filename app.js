@@ -41,40 +41,40 @@ const app = express()
 //     next()
 //   }
 // })
-app.use(history({
-  rewrites: [
-    {
-      from: /^\/admin/,
-      to(context) {
-        const reg = /^.+\.[a-z\d]+$/
-        if (reg.test(context.parsedUrl.pathname)) {
-          return context.parsedUrl.pathname
-        }
-        return '/admin/index.html'
-      }
-    },
-    {
-      from: /^\/h5/,
-      to(context) {
-        const reg = /^.+\.[a-z\d]+$/
-        if (reg.test(context.parsedUrl.pathname)) {
-          return context.parsedUrl.pathname
-        }
-        return '/h5/index.html'
-      }
-    }, {
-      from: /^\/web/,
-      to(context) {
-        const reg = /^.+\.[a-z\d]+$/
-        if (reg.test(context.parsedUrl.pathname)) {
-          return context.parsedUrl.pathname
-        }
-        return '/web/index.html'
-      }
-    }
-  ],
-  htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
-}))
+// app.use(history({
+//   rewrites: [
+//     {
+//       from: /^\/admin/,
+//       to(context) {
+//         const reg = /^.+\.[a-z\d]+$/
+//         if (reg.test(context.parsedUrl.pathname)) {
+//           return context.parsedUrl.pathname
+//         }
+//         return '/admin/index.html'
+//       }
+//     },
+//     {
+//       from: /^\/h5/,
+//       to(context) {
+//         const reg = /^.+\.[a-z\d]+$/
+//         if (reg.test(context.parsedUrl.pathname)) {
+//           return context.parsedUrl.pathname
+//         }
+//         return '/h5/index.html'
+//       }
+//     }, {
+//       from: /^\/web/,
+//       to(context) {
+//         const reg = /^.+\.[a-z\d]+$/
+//         if (reg.test(context.parsedUrl.pathname)) {
+//           return context.parsedUrl.pathname
+//         }
+//         return '/web/index.html'
+//       }
+//     }
+//   ],
+//   htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
+// }))
 app.use(compression())
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
