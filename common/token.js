@@ -22,8 +22,11 @@ function verifyToken(token) {
   const key = fs.readFileSync('./pem/rsa_public_key.pem')// 公钥 可以自己生成
   return new Promise((resolve, reject) => {
     jwt.verify(token, key, { algorithms: ['RS256'] }, function (err, payload) {
-      if (payload) resolve(payload)
-      else reject(err)
+      if (payload) {
+        resolve(payload)
+      } else {
+        reject(err)
+      }
     })
   })
 }

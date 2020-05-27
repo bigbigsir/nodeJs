@@ -10,6 +10,11 @@ const Pinyin = require('node-pinyin')
 const svgCaptcha = require('svg-captcha')
 const languages = require('../language')
 const { api } = require('./api')
+const createHandler = require('github-webhook-handler')
+const handler = createHandler({
+  path: '/webhooks',
+  secret: 'd2ViaG9va3M='
+})
 
 const router = express.Router()
 
@@ -59,6 +64,27 @@ const reduce = {
   }
 }
 
+// http.createServer(function (req, res) {
+//   handler(req, res, function (err) {
+//     res.statusCode = 404;
+//     res.end('no such location');
+//   })
+// }).listen(7777)
+
+handler.on('error', function (err) {
+  console.error('Error:', err.message)
+})
+
+handler.on('push', function (event) {
+  console.log('Received a push event for %s to %s',
+    event.payload.repository.name,
+    event.payload.ref)
+  var shpath = './blog-start.sh'
+  RunCmd('sh', [shpath], function (result) {
+    console.log(result)
+  })
+})
+
 router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
   const path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/')
@@ -96,6 +122,38 @@ router.all('/*', (req, res, next) => {
   } else {
     next()
   }
+})
+
+function RunCmd(cmd, cb) {
+  const spawn = require('child_process').exec
+  const child = spawn(cmd, (data) => {
+    console.log(data)
+  })
+  let result = ''
+  child.stdout.on('data', function (data) {
+    result += data.toString()
+    console.log('data', data.toString())
+  })
+
+  child.on('error', function (data) {
+    result += data.toString()
+    console.log('data', data.toString())
+  })
+
+  child.stdout.on('end', function (end) {
+    console.log('end', end)
+    cb(result)
+  })
+
+  child.on('close', (code) => {
+    console.log(`child 进程退出，退出码 ${code}`)
+  })
+}
+
+router.get('/webhooks', (req, res, next) => {
+  RunCmd('git add .', (result) => {
+    res.send(result)
+  })
 })
 
 module.exports = router
