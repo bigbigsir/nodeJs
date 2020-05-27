@@ -64,27 +64,6 @@ const reduce = {
   }
 }
 
-// http.createServer(function (req, res) {
-//   handler(req, res, function (err) {
-//     res.statusCode = 404;
-//     res.end('no such location');
-//   })
-// }).listen(7777)
-
-handler.on('error', function (err) {
-  console.error('Error:', err.message)
-})
-
-handler.on('push', function (event) {
-  console.log('Received a push event for %s to %s',
-    event.payload.repository.name,
-    event.payload.ref)
-  var shpath = './blog-start.sh'
-  RunCmd('sh', [shpath], function (result) {
-    console.log(result)
-  })
-})
-
 router.all('/*', (req, res, next) => {
   const reqParam = req._requestParam
   const path = req.url.replace(/(^\/)|(\?[\s\S]*)/g, '').split('/')
@@ -131,17 +110,16 @@ function RunCmd(cmd, args, cb) {
 
   child.stdout.on('data', function (data) {
     result += data.toString()
-    console.log('stdout data', result)
+    console.log('stdout data:\n', result)
   })
 
   child.stderr.on('data', (data) => {
-    console.log(`stderr data: ${data}`)
+    result += data.toString()
+    console.log(`stderr data:\n ${data}`)
   })
 
   child.stdout.on('end', function (end) {
     console.log('stdout end', end, '\n')
-    console.log('result', result, '\n')
-    cb(result)
   })
 
   child.stderr.on('end', function (end) {
@@ -153,13 +131,30 @@ function RunCmd(cmd, args, cb) {
   })
 
   child.on('close', (code) => {
+    cb(result)
     console.log(`child close 进程退出，退出码 ${code}`)
   })
 }
 
-router.get('/webhooks', (req, res, next) => {
-  RunCmd('git', ['add','.'], (result) => {
-    res.send(result)
+router.post('/webhooks', (req, res, next) => {
+  handler(req, res, function (err) {
+    console.log('err:\n', err)
+    res.statusCode = 404
+    res.end('no such location')
+  })
+})
+
+handler.on('error', function (err) {
+  console.error('Error:', err.message)
+})
+
+handler.on('push', function (event) {
+  console.log('Received a push event for %s to %s',
+    event.payload.repository.name,
+    event.payload.ref)
+  RunCmd('git', ['pull'], (result) => {
+    console.log('RunCmd:\n', result)
+    // res.send(result)
   })
 })
 
