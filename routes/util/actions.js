@@ -11,46 +11,53 @@ function githubWebHooks(req, res) {
   const modified = req.body.head_commit.modified
   const nginxConf = modified.includes('nginx.conf')
   const packageJson = modified.includes('package.json')
-  const shellPath = path.resolve('./github_push.sh')
+  const pullCode = path.resolve('./shell/pull_code.sh')
+  const pm2Reload = path.resolve('./shell/pm2_reload.sh')
   if (ref === 'refs/heads/master' && event === 'push' && verifySecret(req.body, sign)) {
-    runCmd('sh', [shellPath, nginxConf, packageJson], (result) => {
-      res.send(result)
+    runCmd('sh', [pullCode, nginxConf, packageJson], (message) => {
+      res.send({
+        success: true,
+        message
+      })
       crateVersionHtml(req.body)
+      runCmd('sh', [pm2Reload], () => null)
     })
   } else {
-    res.send({ success: false })
+    res.send({
+      success: false,
+      message: ''
+    })
   }
 
   function runCmd(cmd, args, cb) {
-    let result = ''
+    let stdout = ''
+    let stderr = ''
     const spawn = require('child_process').spawn
     const child = spawn(cmd, args)
 
     child.stdout.on('data', (data) => {
-      result += data.toString()
-      console.log('stdout data:\n', result)
+      stdout += data.toString()
     })
 
     child.stderr.on('data', (data) => {
-      result += data.toString()
-      console.log(`stderr data:\n ${data}`)
+      stderr += data.toString()
     })
 
-    child.stdout.on('end', (end) => {
-      console.log('stdout end', end, '\n')
+    child.stdout.on('end', () => {
+      console.log('stdout end=>\n', stdout)
     })
 
-    child.stderr.on('end', (end) => {
-      console.log('stderr end', end, '\n')
+    child.stderr.on('end', () => {
+      console.log('stderr end=>\n', stderr)
     })
 
     child.on('error', function (data) {
-      console.log('child error', data.toString())
+      console.log('child_process error', data.toString())
     })
 
     child.on('close', (code) => {
-      cb(result)
-      console.log(`child close 进程退出，退出码 ${code}`)
+      cb(stdout)
+      console.log(`child_process close 进程退出，退出码 ${code}`)
     })
   }
 
@@ -62,12 +69,14 @@ function githubWebHooks(req, res) {
   }
 
   function crateVersionHtml(body) {
+    const format = 'YYYY-MM-DD hh:mm:ss'
     const version = {
       project: body.repository.name,
       commit: body.head_commit.id,
       committer: body.head_commit.committer.name,
       committerEmail: body.head_commit.committer.email,
-      commitDate: moment(new Date(body.head_commit.timestamp)).format('YYYY-MM-DD hh:mm:ss')
+      commitDate: moment(new Date(body.head_commit.timestamp)).format(format),
+      pullDate: moment().format(format)
     }
     ejs.renderFile(path.resolve('./views/version.ejs'), { version }, (err, str) => {
       const html = err ? `<pre>${err}</pre>` : str

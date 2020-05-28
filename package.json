@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node port_3000.js",
+    "start": "node port_4000.js",
     "pm2": "pm2 start pm2.json",
     "lintjs": "eslint --fix --ext .js routes"
   },

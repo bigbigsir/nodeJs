@@ -10,12 +10,7 @@ const Pinyin = require('node-pinyin')
 const svgCaptcha = require('svg-captcha')
 const languages = require('../../language')
 const { api } = require('../api')
-const createHandler = require('github-webhook-handler')
-const { githubWebHooks } = require('./handels')
-const handler = createHandler({
-  path: '/webhooks',
-  secret: 'd2ViaG9va3M='
-})
+const { githubWebHooks } = require('./actions')
 
 const router = express.Router()
 
@@ -104,53 +99,6 @@ router.all('/*', (req, res, next) => {
   }
 })
 
-function RunCmd(cmd, args, cb) {
-  let result = ''
-  const spawn = require('child_process').spawn
-  const child = spawn(cmd, args)
-
-  child.stdout.on('data', function (data) {
-    result += data.toString()
-    console.log('stdout data:\n', result)
-  })
-
-  child.stderr.on('data', (data) => {
-    result += data.toString()
-    console.log(`stderr data:\n ${data}`)
-  })
-
-  child.stdout.on('end', function (end) {
-    console.log('stdout end', end, '\n')
-  })
-
-  child.stderr.on('end', function (end) {
-    console.log('stderr end', end, '\n')
-  })
-
-  child.on('error', function (data) {
-    console.log('child error', data.toString())
-  })
-
-  child.on('close', (code) => {
-    cb(result)
-    console.log(`child close 进程退出，退出码 ${code}`)
-  })
-}
-
 router.post('/webHooks', githubWebHooks)
-
-handler.on('error', function (err) {
-  console.error('Error:', err.message)
-})
-
-handler.on('push', function (event) {
-  console.log('Received a push event for %s to %s',
-    event.payload.repository.name,
-    event.payload.ref)
-  RunCmd('git', ['pull'], (result) => {
-    console.log('RunCmd:\n', result)
-    // res.send(result)
-  })
-})
 
 module.exports = router
