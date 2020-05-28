@@ -1,9 +1,16 @@
 #!/bin/bash
 echo "<======= git pull =======>"
 git pull
-echo "<======= npm install =======>"
-npm install
-echo "<======= nginx -s reload =======>"
-nginx -s reload
+
+if [ $1 = true ]; then
+  echo "<======= nginx -s reload =======>"
+  nginx -s reload
+fi
+
+if [ $2 = true ]; then
+  echo "<======= npm install =======>"
+  npm install
+fi
+
 echo "<======= pm2 reload all =======>"
 pm2 reload all
