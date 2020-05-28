@@ -70,7 +70,8 @@ function githubWebHooks(req, res) {
       commitDate: moment(new Date(body.head_commit.timestamp)).format('YYYY-MM-DD hh:mm:ss')
     }
     ejs.renderFile(path.resolve('./views/version.ejs'), { version }, (err, str) => {
-      fs.writeFile(path.resolve('./public/version.html'), err || str, (err) => {
+      const html = err ? `<pre>${err}</pre>` : str
+      fs.writeFile(path.resolve('./public/version.html'), html, (err) => {
         if (err) console.log(err)
       })
     })

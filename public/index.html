@@ -3,122 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
+  <link rel="icon" href="./favicon.ico">
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 </head>
 <body>
 <h1><a href="/admin">vue-admin</a></h1>
 <h1><a href="/h5">vue-h5</a></h1>
 <h1><a href="/web">react-web</a></h1>
-<button id="button">发送请求</button>
+<button id="button">local-webHooks-push</button>
+<button id="button1">webHooks-push</button>
 <script>
-  $('#button').on('click', function () {
-    const data = {
-      'ref': 'refs/heads/master',
-      'before': '27843140bdbcbf82157d5edd4963385e1a316c89',
-      'after': '648ec954aa3f3888bf2f26b89ff862ac8d92158d',
-      'repository': {
-        'id': 166796615,
-        'node_id': 'MDEwOlJlcG9zaXRvcnkxNjY3OTY2MTU=',
-        'name': 'nodeJs',
-        'full_name': 'bigbigsir/nodeJs',
-        'private': false,
-        'owner': {
-          'name': 'bigbigsir',
-          'email': '519628061@qq.com',
-          'login': 'bigbigsir',
-          'id': 30718335,
-          'node_id': 'MDQ6VXNlcjMwNzE4MzM1',
-          'avatar_url': 'https://avatars0.githubusercontent.com/u/30718335?v=4',
-          'gravatar_id': '',
-          'url': 'https://api.github.com/users/bigbigsir',
-          'html_url': 'https://github.com/bigbigsir',
-          'followers_url': 'https://api.github.com/users/bigbigsir/followers',
-          'following_url': 'https://api.github.com/users/bigbigsir/following{/other_user}',
-          'gists_url': 'https://api.github.com/users/bigbigsir/gists{/gist_id}',
-          'starred_url': 'https://api.github.com/users/bigbigsir/starred{/owner}{/repo}',
-          'subscriptions_url': 'https://api.github.com/users/bigbigsir/subscriptions',
-          'organizations_url': 'https://api.github.com/users/bigbigsir/orgs',
-          'repos_url': 'https://api.github.com/users/bigbigsir/repos',
-          'events_url': 'https://api.github.com/users/bigbigsir/events{/privacy}',
-          'received_events_url': 'https://api.github.com/users/bigbigsir/received_events',
-          'type': 'User',
-          'site_admin': false
-        },
-        'html_url': 'https://github.com/bigbigsir/nodeJs',
-        'description': 'Node+Express+MongoDB实现的后台服务',
-        'fork': false,
-        'url': 'https://github.com/bigbigsir/nodeJs',
-        'forks_url': 'https://api.github.com/repos/bigbigsir/nodeJs/forks',
-        'keys_url': 'https://api.github.com/repos/bigbigsir/nodeJs/keys{/key_id}',
-        'collaborators_url': 'https://api.github.com/repos/bigbigsir/nodeJs/collaborators{/collaborator}',
-        'teams_url': 'https://api.github.com/repos/bigbigsir/nodeJs/teams',
-        'hooks_url': 'https://api.github.com/repos/bigbigsir/nodeJs/hooks',
-        'issue_events_url': 'https://api.github.com/repos/bigbigsir/nodeJs/issues/events{/number}',
-        'events_url': 'https://api.github.com/repos/bigbigsir/nodeJs/events',
-        'assignees_url': 'https://api.github.com/repos/bigbigsir/nodeJs/assignees{/user}',
-        'branches_url': 'https://api.github.com/repos/bigbigsir/nodeJs/branches{/branch}',
-        'tags_url': 'https://api.github.com/repos/bigbigsir/nodeJs/tags',
-        'blobs_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/blobs{/sha}',
-        'git_tags_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/tags{/sha}',
-        'git_refs_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/refs{/sha}',
-        'trees_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/trees{/sha}',
-        'statuses_url': 'https://api.github.com/repos/bigbigsir/nodeJs/statuses/{sha}',
-        'languages_url': 'https://api.github.com/repos/bigbigsir/nodeJs/languages',
-        'stargazers_url': 'https://api.github.com/repos/bigbigsir/nodeJs/stargazers',
-        'contributors_url': 'https://api.github.com/repos/bigbigsir/nodeJs/contributors',
-        'subscribers_url': 'https://api.github.com/repos/bigbigsir/nodeJs/subscribers',
-        'subscription_url': 'https://api.github.com/repos/bigbigsir/nodeJs/subscription',
-        'commits_url': 'https://api.github.com/repos/bigbigsir/nodeJs/commits{/sha}',
-        'git_commits_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/commits{/sha}',
-        'comments_url': 'https://api.github.com/repos/bigbigsir/nodeJs/comments{/number}',
-        'issue_comment_url': 'https://api.github.com/repos/bigbigsir/nodeJs/issues/comments{/number}',
-        'contents_url': 'https://api.github.com/repos/bigbigsir/nodeJs/contents/{+path}',
-        'compare_url': 'https://api.github.com/repos/bigbigsir/nodeJs/compare/{base}...{head}',
-        'merges_url': 'https://api.github.com/repos/bigbigsir/nodeJs/merges',
-        'archive_url': 'https://api.github.com/repos/bigbigsir/nodeJs/{archive_format}{/ref}',
-        'downloads_url': 'https://api.github.com/repos/bigbigsir/nodeJs/downloads',
-        'issues_url': 'https://api.github.com/repos/bigbigsir/nodeJs/issues{/number}',
-        'pulls_url': 'https://api.github.com/repos/bigbigsir/nodeJs/pulls{/number}',
-        'milestones_url': 'https://api.github.com/repos/bigbigsir/nodeJs/milestones{/number}',
-        'notifications_url': 'https://api.github.com/repos/bigbigsir/nodeJs/notifications{?since,all,participating}',
-        'labels_url': 'https://api.github.com/repos/bigbigsir/nodeJs/labels{/name}',
-        'releases_url': 'https://api.github.com/repos/bigbigsir/nodeJs/releases{/id}',
-        'deployments_url': 'https://api.github.com/repos/bigbigsir/nodeJs/deployments',
-        'created_at': 1548067217,
-        'updated_at': '2020-05-27T12:07:15Z',
-        'pushed_at': 1590590479,
-        'git_url': 'git://github.com/bigbigsir/nodeJs.git',
-        'ssh_url': 'git@github.com:bigbigsir/nodeJs.git',
-        'clone_url': 'https://github.com/bigbigsir/nodeJs.git',
-        'svn_url': 'https://github.com/bigbigsir/nodeJs',
-        'homepage': '',
-        'size': 75713,
-        'stargazers_count': 2,
-        'watchers_count': 2,
-        'language': 'JavaScript',
-        'has_issues': true,
-        'has_projects': true,
-        'has_downloads': true,
-        'has_wiki': true,
-        'has_pages': false,
-        'forks_count': 0,
-        'mirror_url': null,
-        'archived': false,
-        'disabled': false,
-        'open_issues_count': 0,
-        'license': null,
-        'forks': 0,
-        'open_issues': 0,
-        'watchers': 2,
-        'default_branch': 'master',
-        'stargazers': 2,
-        'master_branch': 'master'
-      },
-      'pusher': {
+  const data = {
+    'ref': 'refs/heads/master',
+    'before': '27843140bdbcbf82157d5edd4963385e1a316c89',
+    'after': '648ec954aa3f3888bf2f26b89ff862ac8d92158d',
+    'repository': {
+      'id': 166796615,
+      'node_id': 'MDEwOlJlcG9zaXRvcnkxNjY3OTY2MTU=',
+      'name': 'nodeJs',
+      'full_name': 'bigbigsir/nodeJs',
+      'private': false,
+      'owner': {
         'name': 'bigbigsir',
-        'email': '519628061@qq.com'
-      },
-      'sender': {
+        'email': '519628061@qq.com',
         'login': 'bigbigsir',
         'id': 30718335,
         'node_id': 'MDQ6VXNlcjMwNzE4MzM1',
@@ -138,49 +45,107 @@
         'type': 'User',
         'site_admin': false
       },
-      'created': false,
-      'deleted': false,
-      'forced': false,
-      'base_ref': null,
-      'compare': 'https://github.com/bigbigsir/nodeJs/compare/27843140bdbc...648ec954aa3f',
-      'commits': [
-        {
-          'id': '648ec954aa3f3888bf2f26b89ff862ac8d92158d',
-          'tree_id': '226c42edbd3fa380de2ff7770317fc914f98f473',
-          'distinct': true,
-          'message': '‘update’',
-          'timestamp': '2020-05-27T22:41:13+08:00',
-          'url': 'https://github.com/bigbigsir/nodeJs/commit/648ec954aa3f3888bf2f26b89ff862ac8d92158d',
-          'author': {
-            'name': 'emoji',
-            'email': '519628061@qq.com',
-            'username': 'bigbigsir'
-          },
-          'committer': {
-            'name': 'emoji',
-            'email': '519628061@qq.com',
-            'username': 'bigbigsir'
-          },
-          'added': [
-            'github_push.sh',
-            'routes/util/handels.js',
-            'routes/util/index.js'
-          ],
-          'removed': [
-            'routes/util.js'
-          ],
-          'modified': [
-            'app.js',
-            'package.json',
-            'pm2.json',
-            'port_3000.js',
-            'port_4000.js',
-            'port_80.js',
-            'public/index.html'
-          ]
-        }
-      ],
-      'head_commit': {
+      'html_url': 'https://github.com/bigbigsir/nodeJs',
+      'description': 'Node+Express+MongoDB实现的后台服务',
+      'fork': false,
+      'url': 'https://github.com/bigbigsir/nodeJs',
+      'forks_url': 'https://api.github.com/repos/bigbigsir/nodeJs/forks',
+      'keys_url': 'https://api.github.com/repos/bigbigsir/nodeJs/keys{/key_id}',
+      'collaborators_url': 'https://api.github.com/repos/bigbigsir/nodeJs/collaborators{/collaborator}',
+      'teams_url': 'https://api.github.com/repos/bigbigsir/nodeJs/teams',
+      'hooks_url': 'https://api.github.com/repos/bigbigsir/nodeJs/hooks',
+      'issue_events_url': 'https://api.github.com/repos/bigbigsir/nodeJs/issues/events{/number}',
+      'events_url': 'https://api.github.com/repos/bigbigsir/nodeJs/events',
+      'assignees_url': 'https://api.github.com/repos/bigbigsir/nodeJs/assignees{/user}',
+      'branches_url': 'https://api.github.com/repos/bigbigsir/nodeJs/branches{/branch}',
+      'tags_url': 'https://api.github.com/repos/bigbigsir/nodeJs/tags',
+      'blobs_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/blobs{/sha}',
+      'git_tags_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/tags{/sha}',
+      'git_refs_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/refs{/sha}',
+      'trees_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/trees{/sha}',
+      'statuses_url': 'https://api.github.com/repos/bigbigsir/nodeJs/statuses/{sha}',
+      'languages_url': 'https://api.github.com/repos/bigbigsir/nodeJs/languages',
+      'stargazers_url': 'https://api.github.com/repos/bigbigsir/nodeJs/stargazers',
+      'contributors_url': 'https://api.github.com/repos/bigbigsir/nodeJs/contributors',
+      'subscribers_url': 'https://api.github.com/repos/bigbigsir/nodeJs/subscribers',
+      'subscription_url': 'https://api.github.com/repos/bigbigsir/nodeJs/subscription',
+      'commits_url': 'https://api.github.com/repos/bigbigsir/nodeJs/commits{/sha}',
+      'git_commits_url': 'https://api.github.com/repos/bigbigsir/nodeJs/git/commits{/sha}',
+      'comments_url': 'https://api.github.com/repos/bigbigsir/nodeJs/comments{/number}',
+      'issue_comment_url': 'https://api.github.com/repos/bigbigsir/nodeJs/issues/comments{/number}',
+      'contents_url': 'https://api.github.com/repos/bigbigsir/nodeJs/contents/{+path}',
+      'compare_url': 'https://api.github.com/repos/bigbigsir/nodeJs/compare/{base}...{head}',
+      'merges_url': 'https://api.github.com/repos/bigbigsir/nodeJs/merges',
+      'archive_url': 'https://api.github.com/repos/bigbigsir/nodeJs/{archive_format}{/ref}',
+      'downloads_url': 'https://api.github.com/repos/bigbigsir/nodeJs/downloads',
+      'issues_url': 'https://api.github.com/repos/bigbigsir/nodeJs/issues{/number}',
+      'pulls_url': 'https://api.github.com/repos/bigbigsir/nodeJs/pulls{/number}',
+      'milestones_url': 'https://api.github.com/repos/bigbigsir/nodeJs/milestones{/number}',
+      'notifications_url': 'https://api.github.com/repos/bigbigsir/nodeJs/notifications{?since,all,participating}',
+      'labels_url': 'https://api.github.com/repos/bigbigsir/nodeJs/labels{/name}',
+      'releases_url': 'https://api.github.com/repos/bigbigsir/nodeJs/releases{/id}',
+      'deployments_url': 'https://api.github.com/repos/bigbigsir/nodeJs/deployments',
+      'created_at': 1548067217,
+      'updated_at': '2020-05-27T12:07:15Z',
+      'pushed_at': 1590590479,
+      'git_url': 'git://github.com/bigbigsir/nodeJs.git',
+      'ssh_url': 'git@github.com:bigbigsir/nodeJs.git',
+      'clone_url': 'https://github.com/bigbigsir/nodeJs.git',
+      'svn_url': 'https://github.com/bigbigsir/nodeJs',
+      'homepage': '',
+      'size': 75713,
+      'stargazers_count': 2,
+      'watchers_count': 2,
+      'language': 'JavaScript',
+      'has_issues': true,
+      'has_projects': true,
+      'has_downloads': true,
+      'has_wiki': true,
+      'has_pages': false,
+      'forks_count': 0,
+      'mirror_url': null,
+      'archived': false,
+      'disabled': false,
+      'open_issues_count': 0,
+      'license': null,
+      'forks': 0,
+      'open_issues': 0,
+      'watchers': 2,
+      'default_branch': 'master',
+      'stargazers': 2,
+      'master_branch': 'master'
+    },
+    'pusher': {
+      'name': 'bigbigsir',
+      'email': '519628061@qq.com'
+    },
+    'sender': {
+      'login': 'bigbigsir',
+      'id': 30718335,
+      'node_id': 'MDQ6VXNlcjMwNzE4MzM1',
+      'avatar_url': 'https://avatars0.githubusercontent.com/u/30718335?v=4',
+      'gravatar_id': '',
+      'url': 'https://api.github.com/users/bigbigsir',
+      'html_url': 'https://github.com/bigbigsir',
+      'followers_url': 'https://api.github.com/users/bigbigsir/followers',
+      'following_url': 'https://api.github.com/users/bigbigsir/following{/other_user}',
+      'gists_url': 'https://api.github.com/users/bigbigsir/gists{/gist_id}',
+      'starred_url': 'https://api.github.com/users/bigbigsir/starred{/owner}{/repo}',
+      'subscriptions_url': 'https://api.github.com/users/bigbigsir/subscriptions',
+      'organizations_url': 'https://api.github.com/users/bigbigsir/orgs',
+      'repos_url': 'https://api.github.com/users/bigbigsir/repos',
+      'events_url': 'https://api.github.com/users/bigbigsir/events{/privacy}',
+      'received_events_url': 'https://api.github.com/users/bigbigsir/received_events',
+      'type': 'User',
+      'site_admin': false
+    },
+    'created': false,
+    'deleted': false,
+    'forced': false,
+    'base_ref': null,
+    'compare': 'https://github.com/bigbigsir/nodeJs/compare/27843140bdbc...648ec954aa3f',
+    'commits': [
+      {
         'id': '648ec954aa3f3888bf2f26b89ff862ac8d92158d',
         'tree_id': '226c42edbd3fa380de2ff7770317fc914f98f473',
         'distinct': true,
@@ -215,10 +180,63 @@
           'public/index.html'
         ]
       }
+    ],
+    'head_commit': {
+      'id': '648ec954aa3f3888bf2f26b89ff862ac8d92158d',
+      'tree_id': '226c42edbd3fa380de2ff7770317fc914f98f473',
+      'distinct': true,
+      'message': '‘update’',
+      'timestamp': '2020-05-27T22:41:13+08:00',
+      'url': 'https://github.com/bigbigsir/nodeJs/commit/648ec954aa3f3888bf2f26b89ff862ac8d92158d',
+      'author': {
+        'name': 'emoji',
+        'email': '519628061@qq.com',
+        'username': 'bigbigsir'
+      },
+      'committer': {
+        'name': 'emoji',
+        'email': '519628061@qq.com',
+        'username': 'bigbigsir'
+      },
+      'added': [
+        'github_push.sh',
+        'routes/util/handels.js',
+        'routes/util/index.js'
+      ],
+      'removed': [
+        'routes/util.js'
+      ],
+      'modified': [
+        'app.js',
+        'package.json',
+        'pm2.json',
+        'port_3000.js',
+        'port_4000.js',
+        'port_80.js',
+        'public/index.html'
+      ]
     }
+  }
+  $('#button').on('click', function () {
     $.ajax({
       type: 'post',
       url: '/util/webHooks',
+      headers: {
+        'X-GitHub-Delivery': '9f0313d0-9fde-11ea-9340-c0ca531bde33',
+        'X-GitHub-Event': 'push',
+        'X-Hub-Signature': 'sha1=df1f7c9ec09d3dc892b7ced630347dfc9b9581d2'
+      },
+      contentType: 'application/json;charset=UTF-8',
+      data: JSON.stringify(data),
+      success(data) {
+        console.log(data)
+      }
+    })
+  })
+  $('#button1').on('click', function () {
+    $.ajax({
+      type: 'post',
+      url: '/api/util/webHooks',
       headers: {
         'X-GitHub-Delivery': '9f0313d0-9fde-11ea-9340-c0ca531bde33',
         'X-GitHub-Event': 'push',
